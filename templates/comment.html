@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Комментарии{% endblock title %}
+{% block header %}Комментарии{% endblock header %}
+
+{% block leftaside %}
+{% for company in companies %}
+<div class="struct-external">
+    <div class="struct-branch"></div>
+    <div class="struct-inner">
+        <div class="struct-data" data-type="company" data-id="{{ company.id }}">
+            <div class="struct-btn-1" title="Подчиненная структура">
+                <svg class="struct-btn-1" fill="white"> <path class="struct-btn-path" d="M 0,0 10,0 5,5 Z"/> </svg>
+            </div>
+            <div class="struct-btn-2" title="Уровень ниже">
+                <svg class="struct-btn-2" fill="white"> <path class="struct-btn-path" d="M 0,0 10,0 5,5 10,5 5,10 0,5 5,5 Z"/> </svg>
+            </div>
+            <div class="struct-name">{{ company.name }}</div>
+            <div class="struct-task"><img src="/static/img/task.png" title="Добавить комментарий"/></div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock leftaside %}

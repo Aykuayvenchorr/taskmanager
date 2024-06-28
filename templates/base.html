@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}УМЗР{% endblock title %}</title>
+    <link rel="icon" href="data:;base64,=">
+    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{% static 'js/autorization.js' %}" defer></script>
+    <script src="{% static 'js/aside-left.js' %}" defer></script>
+<!--    <script src="{% static 'js/structure.js' %}" defer></script>-->
+    <script src="{% static 'js/structure_refactor.js' %}" defer></script>
+
+</head>
+<body>
+    <div class="popup-background">
+        <div class="popup">
+            <div class="signin-header"><span>&#10006</span></div>
+            <form class="signin-form" action="signin/">
+                {% csrf_token %}
+                <ul>
+                    <li><input type="text" name="login" placeholder="Логин" required></li>
+                    <li><input type="password" name="password" placeholder="Пароль" required></li>
+                    <li><button type="submit">Войти</button></li>
+                </ul>
+            </form>
+        </div>
+    </div>
+
+    <header>{% block header %}{% endblock header %}</header>
+    <nav>
+        <div class="nav_logo">УМЗР</div>
+        <div class="nav_menu">
+            {% if user.is_authenticated %}
+            <a href="/tasks/">Задачник</a>
+            {% endif %}
+            {% if user.is_authenticated %}
+            <a href="/comments/">Комментарии</a>
+            {% endif %}
+            <a href="#">Menu 2</a>
+            <a href="#">Menu 3</a>
+        </div>
+        <div class="nav_signup">
+            {% if user.is_authenticated %}
+            <span id="signout">Выйти</span>
+            {% else %}
+            <span id="signin">Войти</span>
+            {% endif %}
+        </div>
+        {% csrf_token %}
+    </nav>
+    <section class="body-inner">
+        <section class="body-main">
+            <aside class="body-left">
+                <div class="body-left-header"><div>☞</div></div>
+                <div class="body-left-main">
+                    <div class="body-left-main-block">
+                        {% block leftaside %}{% endblock leftaside %}
+                    </div>
+                </div>
+            </aside>
+        </section>
+        <aside class="body-right"></aside>
+    </section>
+    <footer>
+    <!-- Подвал сайта-->
+    </footer>
+
+    <div class="company-selection">
+        <form id="company-form" method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+        </form>
+    </div>
+
+    <div class="division-selection">
+        <form id="division-form" method="post">
+            {% csrf_token %}
+            {{ form1.as_p }}
+        </form>
+    </div>
+      <div class="dropdown-menu">
+        <div class="dropdown-item">
+            <a href="#" class="dropdown-toggle">Проекты</a>
+            <div class="dropdown-content">
+                <p>Проект 1</p>
+                <p>Проект 2</p>
+                <!-- Дополнительные проекты -->
+            </div>
+        </div>
+        <div class="dropdown-item">
+            <a href="#">Лицензионные участки</a>
+            <div class="dropdown-content">
+                <p>Участок 1</p>
+                <p>Участок 2</p>
+                <!-- Дополнительные участки -->
+            </div>
+        </div>
+        <div class="dropdown-item">
+            <a href="#" class="dropdown-toggle">Месторождения</a>
+            <div class="dropdown-content">
+                <p>Месторождение 1</p>
+                <p>Месторождение 2</p>
+                <!-- Дополнительные месторождения -->
+            </div>
+        </div>
+        <div class="dropdown-item">
+            <a href="#">Объекты</a>
+            <div class="dropdown-content">
+                <p>Объект 1</p>
+                <p>Объект 2</p>
+                <!-- Дополнительные объекты -->
+            </div>
+        </div>
+    </div>
+    <input type="checkbox" id="side-checkbox" />
+    <div class="side-panel">
+        <label class="side-button-2" for="side-checkbox">+</label>
+        <div class="side-title">Список задач:</div>
+        <ul id="task-list">
+            {% for task in tasks %}
+                <li><a href="tasks/{{ task.id }}">{{ task.name }}</a> - {{ task.descr_task }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#id_company').change(function() {
+                var companyId = $(this).val();
+                $.ajax({
+                    url: "{% url 'get_tasks_by_company' %}",
+                    data: {
+                        'company_id': companyId
+                    },
+                    success: function(data) {
+                        $('#task-list').empty();
+                        data.forEach(function(task) {
+                            $('#task-list').append('<li><a href="tasks/' + task.id + '">' + task.name + '</a> - ' + task.descr_task + '</li>');
+                        });
+                    }
+                });
+            });
+        });
+<!--        // Добавим обработчик события наведения мыши на кнопку-->
+<!--        $('.dropdown-toggle').mouseenter(function(e) {-->
+<!--            e.preventDefault();-->
+<!--            var $parent = $(this).parent('.dropdown-item');-->
+<!--            $parent.addClass('show');-->
+<!--            $('.dropdown-item').not($parent).removeClass('show');-->
+<!--        });-->
+
+<!--        // Изменен обработчик события клика-->
+<!--        $(document).on('click', '.dropdown-content a', function(e) {-->
+<!--            e.preventDefault();-->
+<!--            var selectedItem = $(this).text();-->
+<!--            // Действия при выборе элемента из списка-->
+<!--            console.log("Выбран проект:", selectedItem);-->
+<!--        });-->
+
+<!--        // Обработчик события клика за пределами списка-->
+<!--        $(document).on('click', function(e) {-->
+<!--            if ($('.dropdown-item').hasClass('show')) {-->
+<!--                if (!$(e.target).closest('.dropdown-item').length && !$(e.target).hasClass('dropdown-toggle')) {-->
+<!--                    $('.dropdown-item').removeClass('show');-->
+<!--                }-->
+<!--            }-->
+<!--        });-->
+<!--    });-->
+    </script>
+
+    <div class="side-button-1-wr">
+        <label class="side-button-1" for="side-checkbox">
+            <div class="side-b side-open">Открыть</div>
+            <div class="side-b side-close">Закрыть</div>
+        </label>
+    </div>
+</body>
+</html>

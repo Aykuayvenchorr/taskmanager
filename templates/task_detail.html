@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Описание задачи</title>
+</head>
+<header>Описание задачи</header>
+<body>
+    {{ task.name }}<br>
+    {{ task.descr_task | linebreaks }}  <!-- Используйте linebreaks фильтр Django -->
+    {{ task.date_begin | linebreaks }}
+    {{ task.term }}
+</body>
+</html>
