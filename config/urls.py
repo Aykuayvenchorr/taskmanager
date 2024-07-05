@@ -37,6 +37,8 @@ urlpatterns = [
     path('getfacility/', structure.views.get_facility, name='get_facility'),
     path('getsubfacility/', structure.views.get_subfacility, name='get_subfacility'),
     path('addcomment/', structure.views.add_comment, name='add_comment'),
+    path('getcomments/', structure.views.get_comments, name='get_comments'),
+    path('checkcomment/', structure.views.check_comment, name='check_comment'),
 
     path('get-tasks-by-company/', structure.views.get_tasks_by_company, name='get_tasks_by_company'),
     path('tasks/<int:pk>/', structure.views.task_detail, name='task_detail'),  # Указываем правильное представление

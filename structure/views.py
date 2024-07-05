@@ -1,12 +1,25 @@
+from operator import itemgetter
+
+from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, get_user_model
 
 # Create your views here.
+from comment.models import Comment
 from structure.forms import CompanyForm, DivisionForm
 from structure.models import Company, Division, Project, License, Field, Facility
 from tasker.models import Task
 from user.models import User
+
+model_mapping = {
+    'company': (Company, 'company'),
+    'division': (Division, 'division'),
+    'project': (Project, 'project'),
+    'license': (License, 'license'),
+    'field': (Field, 'field'),
+    'facility': (Facility, 'facility'),
+}
 
 
 def index(request):
@@ -87,7 +100,7 @@ def get_project(request):
     projects = list(Project.objects.filter(division=id))
     data = []
     for project in projects:
-         data.append([project.id, project.name])
+        data.append([project.id, project.name])
 
     return JsonResponse(data, safe=False)
 
@@ -119,7 +132,7 @@ def get_field(request):
     # Получаем месторождения, связанные с лицензиями
     data = []
     for field in fields:
-         data.append([field.id, field.name])
+        data.append([field.id, field.name])
 
     return JsonResponse(data, safe=False)
 
@@ -145,11 +158,50 @@ def get_subfacility(request):
 
 
 def add_comment(request):
-    user_id = request.user.id
-    user = User.objects.get(pk=user_id)
     data_type = request.POST.get('type', None)
     data_id = request.POST.get('id', None)
-    print('data-type:', data_type)
-    print('data-id:', data_id)
-    print('user:', user_id, user)
-    return render(request, 'base.html')
+    model, field_name = model_mapping[data_type]
+    related_instance = model.objects.get(id=data_id)
+
+    comment = Comment()
+    comment.name = request.POST.get('name', None)
+    comment.full_name = request.POST.get('full_name', None)
+    comment.user = request.user
+    setattr(comment, field_name, related_instance)
+    # comment.save()
+    try:
+        comment.save()
+        m = {'message': 'Comment added successfully', 'name': comment.name}
+        return JsonResponse(m)
+    except ValidationError as e:
+        return JsonResponse({'error': f'Validation error: {str(e)}'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
+
+
+def get_comments(request):
+    # model, field_name = model_mapping[request.POST['type']]
+    # related_instance = model.objects.get(id=request.POST['id'])
+    kwargs = {request.POST['type']: request.POST['id']}
+    comments = Comment.objects.filter(**kwargs)
+    data = []
+    for comment in comments:
+        cmt = {}
+        cmt['id'] = comment.id
+        cmt['name'] = comment.name
+        cmt['full_name'] = comment.full_name
+        cmt['user'] = f'{comment.user.surname} {comment.user.name}'
+        cmt['created'] = comment.created
+        cmt['actual'] = comment.actual
+        data.append(cmt)
+        data = sorted(data, key=itemgetter('created'), reverse=True)
+    return JsonResponse(data, safe=False)
+
+
+def check_comment(request):
+    id = request.POST['id']
+    comment = Comment.objects.get(id=id)
+    comment.actual = True if request.POST['value'] == 'true' else False
+    comment.save()
+    data = {'check': comment.actual, }
+    return JsonResponse(data, safe=False)

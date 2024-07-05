@@ -49,7 +49,7 @@ class User(AbstractUser):
         # unique_together = ['field1', 'field2']
 
     def __str__(self):
-        return f'{self.surname} {self.name} {self.patronymic}'
+        return f'{self.username}'
 
     def get_name(self):
         return f'{self.surname} {self.name}.{self.patronymic}.'
