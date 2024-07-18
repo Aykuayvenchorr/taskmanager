@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Комментарии{% endblock title %}
-{% block header %}Комментарии{% endblock header %}
+{% block title %}Задачи{% endblock title %}
+{% block header %}Задачи{% endblock header %}
 
 {% block leftaside %}
 {% for company in companies %}
@@ -16,23 +16,23 @@
             <div class="struct-btn-2" title="Уровень ниже">
                 <svg class="struct-btn-2" fill="white"> <path class="struct-btn-path" d="M 0,0 10,0 5,5 10,5 5,10 0,5 5,5 Z"/> </svg>
             </div>
-            <div class="struct-comment-name">{{ company.name }}</div>
-            <div class="struct-comment"><img src="/static/img/task.png" title="Добавить комментарий"/></div>
+            <div class="struct-task-name">{{ company.name }}</div>
+            <div class="struct-task"><img src="/static/img/task.png" title="Добавить задачу"/></div>
         </div>
     </div>
 </div>
 {% endfor %}
 {% endblock leftaside %}
 {% block data %}
-<div class="comments-header">
-    <div id="comments-header-name">
-        <div id="comments-header-name-title"></div>
-        <div id="comments-header-name-txt"></div>
+<div class="tasks-header">
+    <div id="tasks-header-name">
+        <div id="tasks-header-name-title"></div>
+        <div id="tasks-header-name-txt"></div>
     </div>
-    <div id="comments-header-all">
-        <label for="comments-all">Показать неактуальные</label>
-        <input id="comments-all" type="checkbox">
+    <div id="tasks-header-all">
+        <label for="tasks-all">Показать неактуальные</label>
+        <input id="tasks-all" type="checkbox">
     </div>
 </div>
-<div id="comments-data"></div>
+<div id="tasks-data"></div>
 {% endblock data %}

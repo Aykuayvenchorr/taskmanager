@@ -8,31 +8,32 @@ from user.models import User
 
 class Task(models.Model):
     IMPORTANT_CHOICES = (
-        ('1', 'Низкая степень важности'),
-        ('2', 'Средняя степень важности'),
-        ('3', 'Высокая степень важности'),
+        ('Низкая степень важности', 'Низкая степень важности'),
+        ('Средняя степень важности', 'Средняя степень важности'),
+        ('Высокая степень важности', 'Высокая степень важности'),
     )
 
     STATUS = (
-        ('1', 'Отложена'),
-        ('2', 'В работе'),
-        ('3', 'Завершена'),
+        ('Отложена', 'Отложена'),
+        ('В работе', 'В работе'),
+        ('Завершена', 'Завершена'),
     )
 
     name = models.TextField(blank=False, null=False)
     descr_task = models.TextField(blank=False, null=False)
-    date_begin = models.DateTimeField(default=datetime.datetime(2000, 1, 1, 0, 0))
+    date_begin = models.DateField()
     term = models.IntegerField(default=0)  # Продолжительность в днях !!!
     source = models.TextField(blank=True, null=True)
     descr_source = models.TextField(blank=True, null=True)
     last_task = models.ForeignKey('Task', on_delete=SET_NULL, blank=True, null=True)
 
     importance = models.CharField(max_length=50, choices=IMPORTANT_CHOICES)
-    date_develop = models.DateTimeField()
-    date_funding = models.DateTimeField()
-    cost = models.FloatField(default=0)
+    date_develop = models.DateField(blank=True, null=True)  # Дата освоения
+    date_funding = models.DateField(blank=True, null=True)  # Дата финансирования
+    cost = models.FloatField(default=0, blank=True, null=True)
     status = models.CharField(max_length=50, choices=STATUS)
-    user = models.ForeignKey(User, on_delete=SET_NULL, null=True, blank=True)
+    user_created = models.ForeignKey(User, on_delete=SET_NULL, null=True, blank=True, related_name='tasks_created')
+    user_responsible = models.ForeignKey(User, on_delete=SET_NULL, null=True, blank=True, related_name='tasks_responsible')
 
     company = models.ForeignKey(Company, on_delete=SET_NULL, blank=True, null=True)
     division = models.ForeignKey(Division, on_delete=SET_NULL, blank=True, null=True)

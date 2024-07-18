@@ -13,6 +13,8 @@
     <script src="{% static 'js/autorization.js' %}" defer></script>
     <script src="{% static 'js/aside-left.js' %}" defer></script>
 <!--    <script src="{% static 'js/structure.js' %}" defer></script>-->
+    <script src="{% static 'js/constants.js' %}" defer></script>
+    <script src="{% static 'js/structure_tasks.js' %}" defer></script>
     <script src="{% static 'js/structure_comments.js' %}" defer></script>
 
 </head>
@@ -31,7 +33,7 @@
         </div>
     </div>
 
-    <header>{% block header %}{% endblock header %}</header>
+    <header data-type="">{% block header %}{% endblock header %}</header>
     <nav>
         <div class="nav_logo">
             <img src="{% static 'img/mark.png'%}">

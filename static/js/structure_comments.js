@@ -1,87 +1,45 @@
-const leftaside = document.querySelector('.body-left');
-const csrfmiddlewaretoken = document.querySelector('nav input[name="csrfmiddlewaretoken"]').value
-
-const struct = {
-    company: '/getsubcompanies/',
-    division_company: '/getdivisions/',
-    division: '/getsubdivisions/',
-    project_division: '/getproject/',
-    license_project: '/getlicense/',
-    field_license: '/getfield/',
-    facility_field: '/getfacility/',
-    facility: '/getsubfacility/'
-};
-const structnext = {
-    company: 'division',
-    division: 'project',
-    project: 'license',
-    license: 'field',
-    field: 'facility'
-};
-const structbtn1 = {
-    company: true,
-    division: true,
-    project: false,
-    license: false,
-    field: false,
-    facility: true
-};
-const structbtn2 = {
-    company: true,
-    division: true,
-    project: true,
-    license: true,
-    field: true,
-    facility: false
-};
-const structname = {
-    company: 'Компания',
-    division: 'Подразделение',
-    project: 'Проект',
-    license: 'Лицензия',
-    field: 'Месторождение',
-    facility: 'Объект'
-};
-
-function btnsClick() {
+function btnsClickComment() {
     const btns1 = leftaside.querySelectorAll('.struct-btn-1');
     const btns2 = leftaside.querySelectorAll('.struct-btn-2');
-    const btnsTask = leftaside.querySelectorAll('.struct-task');
-    const structNames = leftaside.querySelectorAll('.struct-name');
+    const btnsComment = leftaside.querySelectorAll('.struct-comment');
+    const commentsName = leftaside.querySelectorAll('.struct-comment-name');
 
-    if (btns1 && btns2 && btnsTask) {
+
+    if (btns1 && btns2 && btnsComment && (commentsName.length > 0)) {
     // for (let btn1 of btns1) { btn1.addEventListener("click", clickBtn1); };
-        for (let btn1 of btns1) { btn1.onclick = clickBtn1; };
-        for (let btn2 of btns2) { btn2.onclick = clickBtn2; };
-        for (let btnTask of btnsTask) { btnTask.onclick = clickBtnTask; };
-        for (let structName of structNames) { structName.onclick = clickStructName; };
+        for (let btn1 of btns1) { btn1.onclick = clickBtnComment1; };
+        for (let btn2 of btns2) { btn2.onclick = clickBtnComment2; };
+        for (let btnComment of btnsComment) { btnComment.onclick = clickBtnComment; };
+        for (let commentName of commentsName) { commentName.onclick = clickStructName; };
     };
 };
-btnsClick();
+btnsClickComment();
 
-function clickBtn1(e) {
+function clickBtnComment1(e) {
+//    console.log("comments 1!!!!");
     const btn1 = e.currentTarget;
     var data_type = btn1.parentElement.getAttribute("data-type");
     if (btn1.parentElement.parentElement.classList.contains('open')) {
         btn1.parentElement.parentElement.classList.remove('open');
-        removeStructSubrow(btn1);
+        removeStructSubrowComment(btn1);
     } else {
         btn1.parentElement.parentElement.classList.add('open');
-        ajaxGetSubrowData(btn1.parentElement.getAttribute("data-id"), btn1, data_type);
+        ajaxGetSubrowDataComment(btn1.parentElement.getAttribute("data-id"), btn1, data_type);
     };
 };
-function clickBtn2(e) {
+function clickBtnComment2(e) {
+//    console.log("comments 2!!!!");
     const btn2 = e.currentTarget;
     let prev = btn2.parentElement.getAttribute("data-type");
     if (btn2.parentElement.parentElement.classList.contains('open')) {
         btn2.parentElement.parentElement.classList.remove('open');
-        removeStructSubrow(btn2);
+        removeStructSubrowComment(btn2);
     } else {
         btn2.parentElement.parentElement.classList.add('open');
-        ajaxGetSubrowData(btn2.parentElement.getAttribute("data-id"), btn2, structnext[prev], prev);
+        ajaxGetSubrowDataComment(btn2.parentElement.getAttribute("data-id"), btn2, structnext[prev], prev);
     };
 };
-function clickBtnTask(e) {
+function clickBtnComment(e) {
     const btnTask = e.currentTarget;
     const data_type = btnTask.parentElement.getAttribute("data-type");
     const data_id = btnTask.parentElement.getAttribute("data-id");
@@ -217,7 +175,7 @@ function openComment() {
         }};
     };
 };
-function addStructSubrow(btn, data_type, objs) {
+function addStructSubrowComment(btn, data_type, objs) {
     /*
     btn - элемент html (элементы классов struct-btn-1 или struct-btn-2), на котором нажата кнопка мыши
     data_type - тип данных (data-attribute): company / division / project / license / field / facility
@@ -239,21 +197,21 @@ function addStructSubrow(btn, data_type, objs) {
                               "    <div class=\"struct-inner\">" +
                               "        <div class=\"struct-data\" data-type=" + data_type + " data-id=" + obj[0] + ">" +
                                             htmlBtn1 + htmlBtn2 +
-                              "            <div class=\"struct-name\">" + obj[1] + "</div>" +
-                              "            <div class=\"struct-task\"><img src=\"/static/img/task.png\" title=\"Добавить комментарий\"/></div>"
+                              "            <div class=\"struct-comment-name\">" + obj[1] + "</div>" +
+                              "            <div class=\"struct-comment\"><img src=\"/static/img/task.png\" title=\"Добавить комментарий\"/></div>"
                               "        </div>" +
                               "    </div>"
         btn.parentElement.parentElement.appendChild(pointMenu);
     };
-    btnsClick();
+    btnsClickComment();
 };
-function removeStructSubrow(btn) {
+function removeStructSubrowComment(btn) {
     const childs = btn.parentElement.parentElement.querySelectorAll('.struct-external');
     for (let child of childs){
         btn.parentElement.parentElement.removeChild(child);
     };
 };
-function ajaxGetSubrowData(id, btn, data_type, prev='') {
+function ajaxGetSubrowDataComment(id, btn, data_type, prev='') {
     if (!prev) {
         // prev - пустая строка, null или undefined
         keyStruct = data_type;
@@ -268,11 +226,11 @@ function ajaxGetSubrowData(id, btn, data_type, prev='') {
                 'csrfmiddlewaretoken': csrfmiddlewaretoken,
             },
             success: function(data) {
-                addStructSubrow(btn, data_type, data);
+                addStructSubrowComment(btn, data_type, data);
                 // location.reload(false);
             },
             error: function(data) {
-                alert( 'Ошибка в ajaxGetSubrowData');
+                alert( 'Ошибка в ajaxGetSubrowDataComment');
             },
         });
     };

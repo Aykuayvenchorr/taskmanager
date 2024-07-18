@@ -26,7 +26,7 @@ urlpatterns = [
     path('', structure.views.index),
     path('signin/', structure.views.signin, name='signin'),
     path('signout/', structure.views.signout, name='signout'),
-    path('tasks/', tasker.views.get_tasks, name='get_tasks'),
+    path('tasks/', tasker.views.tasks, name='tasks'),
     path('comments/', comment.views.get_comments, name='get_comments'),
     path('getsubcompanies/', structure.views.get_subcompanies, name='get_subcompanies'),
     path('getdivisions/', structure.views.get_divisions, name='get_divisions'),
@@ -37,10 +37,13 @@ urlpatterns = [
     path('getfacility/', structure.views.get_facility, name='get_facility'),
     path('getsubfacility/', structure.views.get_subfacility, name='get_subfacility'),
     path('addcomment/', structure.views.add_comment, name='add_comment'),
+    path('addtask/', tasker.views.add_task, name='add_task'),
     path('getcomments/', structure.views.get_comments, name='get_comments'),
+    path('gettasks/', tasker.views.get_tasks, name='get_tasks'),
     path('checkcomment/', structure.views.check_comment, name='check_comment'),
+    path('get_users/', tasker.views.get_users, name='get_users'),
 
     path('get-tasks-by-company/', structure.views.get_tasks_by_company, name='get_tasks_by_company'),
     path('tasks/<int:pk>/', structure.views.task_detail, name='task_detail'),  # Указываем правильное представление
-
+    # path('get_users/', tasker.views.get_users, name='get_users'),
 ]

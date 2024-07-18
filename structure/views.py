@@ -114,7 +114,6 @@ def get_license(request):
 
     # Получаем лицензии, связанные с проектом
     licenses = project.licenses.all()
-    print(licenses)
 
     # Формируем данные для ответа
     data = [[license.id, license.name] for license in licenses]
@@ -191,10 +190,17 @@ def get_comments(request):
         cmt['name'] = comment.name
         cmt['full_name'] = comment.full_name
         cmt['user'] = f'{comment.user.surname} {comment.user.name}'
-        cmt['created'] = comment.created
+        # cmt['created'] = comment.created
+
+        d = str(comment.created).split()[0]
+        t = str(comment.created).split()[1].split('.')[0]
+        cmt['created'] = f'{d} {t}'
+
         cmt['actual'] = comment.actual
         data.append(cmt)
         data = sorted(data, key=itemgetter('created'), reverse=True)
+
+        # print([d, t])
     return JsonResponse(data, safe=False)
 
 
