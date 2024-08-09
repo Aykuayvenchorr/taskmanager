@@ -29,9 +29,15 @@
         <div id="tasks-header-name-title"></div>
         <div id="tasks-header-name-txt"></div>
     </div>
-    <div id="tasks-header-all">
-        <label for="tasks-all">Показать неактуальные</label>
-        <input id="tasks-all" type="checkbox">
+<!--    <div id="tasks-header-all">-->
+<!--        <label for="tasks-all">Показать неактуальные</label>-->
+<!--        <input id="tasks-all" type="checkbox">-->
+<!--    </div>-->
+     <div id="tasks-filter">
+        <label for="responsible-filter">Фильтр по ответственному:</label>
+        <select id="responsible-filter" onchange="applyFilter()">
+            <!-- Здесь добавляются опции -->
+        </select>
     </div>
 </div>
 <div id="tasks-data"></div>

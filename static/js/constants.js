@@ -1,7 +1,9 @@
 const leftaside = document.querySelector('.body-left');
+const leftaside_mainblock = document.querySelector('.body-left-main-block');
 const csrfmiddlewaretoken = document.querySelector('nav input[name="csrfmiddlewaretoken"]').value
 const header = document.querySelector('header');
 const body_data = document.querySelector('.body-data')
+const tasks_data = document.getElementById('tasks-data')
 
 const struct = {
     company: '/getsubcompanies/',

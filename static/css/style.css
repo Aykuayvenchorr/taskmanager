@@ -208,7 +208,8 @@ nav div a:hover, nav div span:hover { color: var(--color-text-DarkGreen); }
 .struct-comment img,
 .comment-view-btn svg,
 .task-view-btn svg,
-.task-btn-open svg {
+.task-btn-open svg,
+.add-subtask img {
     width: 10px;
     height: 10px;
     cursor: pointer;
@@ -236,7 +237,7 @@ nav div a:hover, nav div span:hover { color: var(--color-text-DarkGreen); }
     min-height: 700px;
     margin: 3px 0 0 7px;
     padding: clamp(7px, 5vw, 17px);
-    background-color: rgb(255, 177, 177);
+    background-color: #05260f;
 }
 /* comment task */
 .comment-add-popup {
@@ -400,7 +401,32 @@ nav div a:hover, nav div span:hover { color: var(--color-text-DarkGreen); }
 }
 
 
+/* ФИЛЬТРЫ */
+/* Стиль для блока с фильтром */
+#tasks-filter {
+    display: flex;
+    align-items: center;
+}
 
+/* Стиль для текстового лейбла фильтра */
+#tasks-filter label {
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+/* Стиль для выпадающего списка */
+#responsible-filter {
+    padding: 5px;
+    font-size: 14px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+/* Пример стиля для скрытых задач (если применено фильтрование) */
+.task-view-block[style="display: none;"],
+.subtask-view-block[style="display: none;"] {
+    display: none !important;
+}
 
 
 

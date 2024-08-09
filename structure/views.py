@@ -55,11 +55,6 @@ def signout(request):
     return JsonResponse(data)
 
 
-def task_detail(request, pk):
-    task = Task.objects.get(pk=pk)
-    return render(request, 'task_detail.html', {'task': task})
-
-
 def menu_structure():
     holdings = Company.objects.filter(parent__isnull=True)
 
