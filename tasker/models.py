@@ -61,26 +61,26 @@ class Task(models.Model):
     def date_begin_from_last_task(self):
         pass
 
-    def save(self, *args, **kwargs):
-        # Проверяем и устанавливаем company на основе связанных объектов, если это необходимо
-        if not self.company:
-            if self.division and self.division.company:
-                self.company = self.division.company
-            elif self.project and self.project.division and self.project.division.company:
-                self.company = self.project.division.company
-                self.division = self.project.division
-            elif self.license:
-                self.company = self.license.owner
-            elif self.field and self.field.license:
-                self.company = self.field.license.owner
-                self.license = self.field.license
-            elif self.facility and self.facility.field:
-                self.company = self.facility.field.license.owner
-                self.license = self.facility.field.license
-                self.field = self.facility.field
-
-        # Вызов родительского метода save для сохранения изменений
-        super(Task, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     # Проверяем и устанавливаем company на основе связанных объектов, если это необходимо
+    #     if not self.company:
+    #         if self.division and self.division.company:
+    #             self.company = self.division.company
+    #         elif self.project and self.project.division and self.project.division.company:
+    #             self.company = self.project.division.company
+    #             self.division = self.project.division
+    #         elif self.license:
+    #             self.company = self.license.owner
+    #         elif self.field and self.field.license:
+    #             self.company = self.field.license.owner
+    #             self.license = self.field.license
+    #         elif self.facility and self.facility.field:
+    #             self.company = self.facility.field.license.owner
+    #             self.license = self.facility.field.license
+    #             self.field = self.facility.field
+    #
+    #     # Вызов родительского метода save для сохранения изменений
+    #     super(Task, self).save(*args, **kwargs)
 
 
 class TaskDependencies(models.Model):

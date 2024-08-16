@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -141,3 +141,15 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'user.User'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Устанавливаем лимит на загрузку данных до 50 MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50 MB
+
+# Устанавливаем лимит на загрузку файлов в память до 50 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50 MB
+
+# Увеличиваем максимальное количество полей формы
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000  # Увеличьте число в зависимости от ваших нужд

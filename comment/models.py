@@ -33,3 +33,13 @@ class Comment(models.Model):
     class Meta:
         verbose_name = "Комментарий"
         verbose_name_plural = "Комментарии"
+
+
+class Document(models.Model):
+    comment = models.ForeignKey(Comment, on_delete=SET_NULL, blank=True, null=True)
+    title = models.CharField(max_length=255)
+    file = models.FileField(upload_to='documents/', help_text="Загрузите документ")
+
+    class Meta:
+        verbose_name = "Документ"
+        verbose_name_plural = "Документы"

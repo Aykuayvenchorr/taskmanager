@@ -1,12 +1,28 @@
 const leftaside = document.querySelector('.body-left');
 const csrfmiddlewaretoken = document.querySelector('nav input[name="csrfmiddlewaretoken"]').value
 
+
+//function closeAllStructures() {
+//        // Закрываем все открытые элементы
+//        console.log('Удалить')
+//        const openElements = leftaside.querySelectorAll('.struct-data.open');
+//        openElements.forEach(el => {
+//            el.classList.remove('open');
+//            // Удаляем структуру из DOM, если требуется
+//            removeStructure(el.querySelector('.struct-btn-1'));
+//            removeStructure(el.querySelector('.struct-btn-2'));
+//        });
+//    };
+
 function btnsClick() {
+
     const btns1 = leftaside.querySelectorAll('.struct-btn-1');
     const btns2 = leftaside.querySelectorAll('.struct-btn-2');
     if (btns1) {
         for (let btn1 of btns1) {
             btn1.onclick = function(e) {
+//            closeAllStructures();
+//               console.log('btn1')
             // Для компании и подкомпании
                 if (btn1.parentElement.getAttribute("data-type") === 'company') {
                     if (btn1.parentElement.parentElement.classList.contains('open')) {
@@ -30,7 +46,7 @@ function btnsClick() {
                 };
                  // Для лицензии
                 if (btn1.parentElement.getAttribute("data-type") === 'project') {
-                    console.log('ok')
+//                    console.log('ok')
                     if (btn1.parentElement.parentElement.classList.contains('open')) {
                         btn1.parentElement.parentElement.classList.remove('open');
                         removeStructure(btn1);
@@ -46,6 +62,8 @@ function btnsClick() {
     if (btns2) {
         for (let btn2 of btns2) {
             btn2.onclick = function(e) {
+//            closeAllStructures();
+
                 if (btn2.parentElement.getAttribute("data-type") === 'company') {
                     if (btn2.parentElement.parentElement.classList.contains('open')) {
                         btn2.parentElement.parentElement.classList.remove('open');
@@ -70,6 +88,7 @@ function btnsClick() {
     };
 };
 btnsClick();
+
 
 function getSubcompany(id, btn) {
     $.ajax({

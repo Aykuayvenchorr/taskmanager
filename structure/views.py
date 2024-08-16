@@ -1,3 +1,4 @@
+import json
 from operator import itemgetter
 
 from django.core.exceptions import ValidationError
@@ -6,7 +7,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout, get_user_model
 
 # Create your views here.
-from comment.models import Comment
+from comment.models import Comment, Document
 from structure.forms import CompanyForm, DivisionForm
 from structure.models import Company, Division, Project, License, Field, Facility
 from tasker.models import Task
@@ -152,12 +153,26 @@ def get_subfacility(request):
 
 
 def add_comment(request):
+    # data = request.FILES
+    # print(data)
+    # return JsonResponse({'message': 'Комментарий успешно добавлен.'})
     data_type = request.POST.get('type', None)
     data_id = request.POST.get('id', None)
+
     model, field_name = model_mapping[data_type]
     related_instance = model.objects.get(id=data_id)
-
     comment = Comment()
+    doc = Document()
+
+    structures_data = request.POST.get('structures', None)
+
+    structures_data = json.loads(structures_data)
+    if len(structures_data) > 0:
+        for el in structures_data:
+            mod, f_name = model_mapping[el['type']]
+            rel_instance = mod.objects.get(id=el['id'])
+            setattr(comment, f_name, rel_instance)
+
     comment.name = request.POST.get('name', None)
     comment.full_name = request.POST.get('full_name', None)
     comment.user = request.user
@@ -165,6 +180,15 @@ def add_comment(request):
     # comment.save()
     try:
         comment.save()
+        # Обрабатываем файлы из запроса
+        files = request.FILES.getlist('file')  # Получаем список файлов
+        for file in files:
+            document = Document()
+            document.comment = comment
+            document.title = file.name
+            document.file = file
+            document.save()
+
         m = {'message': 'Comment added successfully', 'name': comment.name}
         return JsonResponse(m)
     except ValidationError as e:

@@ -1,4 +1,5 @@
 function btnsClickComment() {
+
     const btns1 = leftaside.querySelectorAll('.struct-btn-1');
     const btns2 = leftaside.querySelectorAll('.struct-btn-2');
     const btnsComment = leftaside.querySelectorAll('.struct-comment');
@@ -15,9 +16,39 @@ function btnsClickComment() {
 };
 btnsClickComment();
 
+function openPopupComment(e) {
+    const comment_view_name = e.currentTarget;
+    const comment_view_fullname = e.currentTarget.nextSibling.nextSibling;
+    const body = document.querySelector('body');
+    const popup = document.createElement('div');
+    popup.classList.add("popup-background");
+    popup.classList.add("open");
+    popup.id = 'add_comment';
+    popup.innerHTML = "<div class=\"comment-add-popup\">" +
+                      "  <div class=\"signin-header\"><span>&#10006</span></div>" +
+                      "    <form class=\"comment-form\" id=\"comment-form\" action=\"#\"enctype=\"multipart/form-data\">" +
+                      "      <textarea class=\"comment-name\" name=\"name\">" + comment_view_name.innerText + "</textarea>" +
+                      "      <textarea name=\"full_name\">" + comment_view_fullname.innerText + "</textarea>" +
+                      "      <label for=\"file-upload\" class=\"file-upload-label\">Загрузить файл</label>" +
+                      "      <input type=\"file\" id=\"file-upload\" name=\"file\" class=\"file-upload-input\" multiple/>" +
+                      "      <div id=\"file-list\"></div>" +
+                      "      <button type=\"submit\">Отправить</button>" +
+                      "    </form>" +
+                      "</div>";
+    body.prepend(popup);
+    const btnClose = popup.querySelector('.signin-header>span');
+    btnClose.onclick = () => {
+        const addcommentpopup = document.getElementById('add_comment');
+        addcommentpopup.parentElement.removeChild(addcommentpopup);
+    };
+
+};
+
+
+
 function clickBtnComment1(e) {
-//    console.log("comments 1!!!!");
     const btn1 = e.currentTarget;
+
     var data_type = btn1.parentElement.getAttribute("data-type");
     if (btn1.parentElement.parentElement.classList.contains('open')) {
         btn1.parentElement.parentElement.classList.remove('open');
@@ -28,8 +59,8 @@ function clickBtnComment1(e) {
     };
 };
 function clickBtnComment2(e) {
-//    console.log("comments 2!!!!");
     const btn2 = e.currentTarget;
+
     let prev = btn2.parentElement.getAttribute("data-type");
     if (btn2.parentElement.parentElement.classList.contains('open')) {
         btn2.parentElement.parentElement.classList.remove('open');
@@ -43,6 +74,35 @@ function clickBtnComment(e) {
     const btnTask = e.currentTarget;
     const data_type = btnTask.parentElement.getAttribute("data-type");
     const data_id = btnTask.parentElement.getAttribute("data-id");
+
+    const structData = btnTask.parentElement;
+    let listParents = [];
+    if (data_type != "company") {
+        let struct_external = structData.parentElement.parentElement;
+        let parentType = data_type;
+        let parentId = data_id;
+        while (parentType != "company") {
+            let structInner = struct_external.parentElement;
+            if (structInner.classList.contains('struct-inner')) {
+                if (parentType != structInner.childNodes[1].getAttribute('data-type')) {
+                    parentType = structInner.childNodes[1].getAttribute('data-type');
+                    parentId = structInner.childNodes[1].getAttribute('data-id');
+                    listParents.push({
+                        'id': parentId,
+                        'type': parentType
+                    });
+                } else {
+                    parentType = structInner.childNodes[1].getAttribute('data-type');
+                }
+            } else { parentType = "company"; };
+            struct_external = structInner.parentElement;
+        }
+    };
+//    console.log(listParents)
+
+
+
+
     const body = document.querySelector('body');
     const popup = document.createElement('div');
     popup.classList.add("popup-background");
@@ -50,13 +110,51 @@ function clickBtnComment(e) {
     popup.id = 'add_comment';
     popup.innerHTML = "<div class=\"comment-add-popup\">" +
                       "  <div class=\"signin-header\"><span>&#10006</span></div>" +
-                      "    <form class=\"comment-form\" id=\"comment-form\" action=\"#\">" +
+                      "    <form class=\"comment-form\" id=\"comment-form\" action=\"#\"enctype=\"multipart/form-data\">" +
                       "      <textarea class=\"comment-name\" name=\"name\" placeholder=\"Краткое описание\" required></textarea>" +
                       "      <textarea name=\"full_name\" placeholder=\"Комментарий\" required></textarea>" +
+                      "      <label for=\"file-upload\" class=\"file-upload-label\">Загрузить файл</label>" +
+                      "      <input type=\"file\" id=\"file-upload\" name=\"file\" class=\"file-upload-input\" multiple/>" +
+                      "      <div id=\"file-list\"></div>" +
                       "      <button type=\"submit\">Отправить</button>" +
                       "    </form>" +
                       "</div>";
     body.prepend(popup);
+
+    const fileInput = document.getElementById('file-upload');
+    const fileList = document.getElementById('file-list');
+
+    let selectedFiles = []; // Массив для хранения всех выбранных файлов
+
+    fileInput.addEventListener('change', (e) => {
+        const newFiles = Array.from(fileInput.files); // Массив новых файлов
+        selectedFiles = selectedFiles.concat(newFiles); // Добавляем новые файлы к уже существующим
+        updateFileList(); // Обновляем отображение списка файлов
+    });
+
+    function updateFileList() {
+        fileList.innerHTML = ''; // Очищаем предыдущий список файлов
+        selectedFiles.forEach((file, index) => {
+            const fileLink = document.createElement('a');
+            fileLink.href = URL.createObjectURL(file);
+            fileLink.target = '_blank';
+            fileLink.textContent = file.name;
+
+            // Добавляем возможность удаления файла
+            const removeBtn = document.createElement('span');
+            removeBtn.innerHTML = ' &#10006;';
+            removeBtn.style.cursor = 'pointer';
+            removeBtn.style.color = '#ffffff';
+            removeBtn.onclick = () => {
+                selectedFiles.splice(index, 1); // Удаляем файл из массива
+                updateFileList(); // Обновляем список файлов
+            };
+
+            fileList.appendChild(fileLink);
+            fileList.appendChild(removeBtn);
+            fileList.appendChild(document.createElement('br'));
+        });
+    }
 
     const formElement = document.getElementById('comment-form'); // извлекаем элемент формы
     formElement.addEventListener('submit', (e) => {
@@ -65,26 +163,55 @@ function clickBtnComment(e) {
         // теперь можно извлечь данные
         const name = formData.get('name');
         const full_name = formData.get('full_name');
+        // Добавляем id и type в formData
+        formData.append('id', data_id);
+        formData.append('type', data_type);
+        formData.append('structures', JSON.stringify(listParents));
+//        for (var i = 0; i < fileList.length; i++) {
+//            formData.append(fileList[i]); // используйте один ключ для всех файлов
+
+//        selectedFiles.forEach((file, index) => {
+//            formData.append(`files[${index}]`, file);
+//        });
+//        console.log([...formData.entries()]);
         $.ajax({
-            url: '/addcomment/',
-            method: 'POST',
-            dataType: 'json',
-                data: {
-                    'id': data_id,
-                    'type': data_type,
-                    'csrfmiddlewaretoken': csrfmiddlewaretoken,
-                    'name': name,
-                    'full_name': full_name,
+                url: '/addcomment/',
+                method: 'POST',
+                data: formData, // Отправляем объект FormData, содержащий файлы
+                processData: false, // Не обрабатываем данные, т.к. это FormData
+                contentType: false, // Устанавливаем contentType в false, чтобы браузер автоматически установил boundary
+                headers: {
+                    'X-CSRFToken': csrfmiddlewaretoken // Передаем CSRF-токен в заголовках
                 },
                 success: function(data) {
                     const addcommentpopup = document.getElementById('add_comment');
                     addcommentpopup.parentElement.removeChild(addcommentpopup);
                 },
                 error: function(data) {
-                    alert( 'Ошибка записи комментария!');
+                    alert('Ошибка записи комментария!');
                 },
+            });
         });
-    });
+//        $.ajax({
+//            url: '/addcomment/',
+//            method: 'POST',
+//                data: {
+//                    'id': data_id,
+//                    'type': data_type,
+//                    'csrfmiddlewaretoken': csrfmiddlewaretoken,
+//                    'name': name,
+//                    'full_name': full_name,
+//                    'files': selectedFiles
+//                },
+//                success: function(data) {
+//                    const addcommentpopup = document.getElementById('add_comment');
+//                    addcommentpopup.parentElement.removeChild(addcommentpopup);
+//                },
+//                error: function(data) {
+//                    alert( 'Ошибка записи комментария!');
+//                },
+//        });
+//    });
 
     const btnClose = popup.querySelector('.signin-header>span');
     btnClose.onclick = () => {
@@ -130,6 +257,7 @@ function viewComments(comments, type, id, name) {
             commentBlock.classList.add("comment-view-block");
             const commentName = document.createElement('div');
             commentName.classList.add("comment-view-name");
+            commentName.dataset.commentid = comments[i]['id']; // создает data-commentid="id комментария"
             commentName.innerHTML = comments[i]['name'];
             commentBlock.appendChild(commentName);
 
@@ -156,6 +284,9 @@ function viewComments(comments, type, id, name) {
     };
     openComment();
     changeCommentCheck();
+
+    const commentsViewName = comments_data.querySelectorAll('.comment-view-name');
+    for (let commentViewName of commentsViewName) { commentViewName.onclick = openPopupComment; };
 };
 function changeCommentsCheck() {
     const commentsCheck = document.getElementById('comments-all');

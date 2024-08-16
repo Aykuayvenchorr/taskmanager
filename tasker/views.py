@@ -1,18 +1,16 @@
+import json
+
 from django.core.exceptions import ValidationError
 from django.shortcuts import render, get_object_or_404
 from operator import itemgetter
-
-# Create your views here.
 
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 
-# Create your views here.
 from structure.models import Company, Division, Project, License, Field, Facility
 from structure.views import menu_structure
 
-# @login_required
 from tasker.models import Task
 from user.models import User
 
@@ -26,9 +24,6 @@ model_mapping = {
 }
 
 
-# struct_task = [(1, 'company'), (2, 'division'), (3, 'project'), (4, 'license'), (5, 'field'), (6, 'facility')]
-
-
 @login_required(login_url="/")
 def tasks(request):
     companies_dict = menu_structure()
@@ -38,20 +33,19 @@ def tasks(request):
 def add_task(request):
     task = Task()
     data_type = request.POST.get('type', None)
-    # print(request.body)
 
     data_id = request.POST.get('id', None)
-    # print(data_id)
 
     model, field_name = model_mapping[data_type]
     related_instance = model.objects.get(id=data_id)
-    # ind = ''
-    # for el in struct_task:
-    #     if el[1] == data_type:
-    #         for i in range(el[0]):
-    #             setattr(task, struct_task[i][1], related_instance)
+    structures_data = request.POST.get('structures', None)
 
-    # print(field_name, related_instance)
+    structures_data = json.loads(structures_data)
+    if len(structures_data) > 0:
+        for el in structures_data:
+            mod, f_name = model_mapping[el['type']]
+            rel_instance = mod.objects.get(id=el['id'])
+            setattr(task, f_name, rel_instance)
 
     task.name = request.POST.get('name', None)
 
@@ -86,21 +80,27 @@ def add_task(request):
 
 
 def add_subtask(request):
-    # print(request.body)
-    # return JsonResponse('ok', safe=False)
     data_type = request.POST.get('type', None)
-    # print(request.body)
 
     data_id = request.POST.get('id', None)
-    # print(data_id)
 
     model, field_name = model_mapping[data_type]
     related_instance = model.objects.get(id=data_id)
 
     task = Task()
+
     task.name = request.POST.get('name', None)
 
     task.last_task = Task.objects.get(id=request.POST.get('task_id', None))
+
+    l_tsk = Task.objects.get(id=request.POST.get('task_id', None))
+    task.company = l_tsk.company or None
+    task.division = l_tsk.division or None
+    task.project = l_tsk.project or None
+    task.license = l_tsk.license or None
+    task.field = l_tsk.field or None
+    task.facility = l_tsk.facility or None
+
 
     task.descr_task = request.POST.get('descr_task', None)
     task.date_begin = request.POST.get('date_begin', None)
@@ -113,7 +113,7 @@ def add_subtask(request):
     task.level = request.POST.get('level', None)
 
     user_id = request.POST.get('select_user')
-    # # Fetch the User instance
+
     user = get_object_or_404(User, pk=user_id)
     task.user_responsible = user
     task.user_created = request.user
@@ -132,7 +132,6 @@ def add_subtask(request):
 def get_tasks(request):
     kwargs = {request.POST['type']: request.POST['id']}
     tasks = Task.objects.filter(**kwargs)
-
     data = []
     for task in tasks:
         if task.level == 1:
@@ -157,9 +156,7 @@ def get_subtasks(request):
     level = int(request.POST.get('level', 2))
     tasks = Task.objects.filter(**kwargs, level=level)
     data = []
-    # print(request.POST['task_id'])
     for task in tasks:
-        # print(task.last_task.id)
         if int(task.last_task.id) == int(request.POST['task_id']):
             tsk = {
                 'id': task.id,
@@ -183,8 +180,6 @@ def get_users(request):
         users = User.objects.all().values('id', 'name', 'surname')
         user_list = list(users)
         return JsonResponse(user_list, safe=False)
-
-
 
 
 def filter_tasks(request):

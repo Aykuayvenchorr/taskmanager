@@ -4,14 +4,6 @@ function btnsClickTask() {
     const btnsTask = leftaside.querySelectorAll('.struct-task');
     const tasksName = leftaside.querySelectorAll('.struct-task-name');
 
-//    const subTasks = tasks_data.querySelectorAll('.add-subtask');
-//    console.log(tasksName)
-//    console.log(subTasks)
-//    const subTasks = body_data.querySelectorAll('.task-btn-open');
-    const opened_structures = leftaside_mainblock.querySelectorAll('.struct-data open');
-    console.log(opened_structures);
-
-
 
     if (btns1 && btns2 && btnsTask && (tasksName.length > 0)) {
     // for (let btn1 of btns1) { btn1.addEventListener("click", clickBtn1); };
@@ -19,10 +11,47 @@ function btnsClickTask() {
         for (let btn2 of btns2) { btn2.onclick = clickBtnTask2; };
         for (let btnTask of btnsTask) { btnTask.onclick = clickBtnTask; };
         for (let taskName of tasksName) { taskName.onclick = clickStructNameTask; };
-//        for (let subTask of subTasks) { subTask.onclick = clickBtnSubTask; };
     };
 };
 btnsClickTask();
+
+function openPopupTask(e) {
+    const task_view_name = e.currentTarget;
+    const task_view_fullname = e.currentTarget.nextSibling.nextSibling;
+    const body = document.querySelector('body');
+    const popup = document.createElement('div');
+    popup.classList.add("popup-background");
+    popup.classList.add("open");
+    popup.id = 'add_task';
+    popup.innerHTML = "<div class=\"task-add-popup\">" +
+                      "  <div class=\"signin-header\"><span>&#10006</span></div>" +
+                      "    <form class=\"task-form\" id=\"task-form\" action=\"#\">" +
+                      "      <textarea class=\"task-name\" name=\"name\">" + task_view_name.innerText + "</textarea>" +
+                      "      <textarea name=\"descr_task\">" + task_view_fullname.innerText + "</textarea>" +
+                      "      <label for=\"date\">Дата начала: </label>" +
+                      "      <input type=\"date\" id=\"date\" name=\"date\"/>" +
+                      "      <textarea style=\"min-height: 7px;\" name=\"term\" placeholder=\"Введите срок задачи в днях\" required></textarea>" +
+                      "      <label for=\"select_importance\">Важность задачи: </label>" +
+                      "      <select id=\"select_importance\" name=\"importance\"><option>Высокая степень важности</option><option>Средняя степень важности</option><option>Низкая степень важности</option></select>" +
+                      "      <label for=\"date_dev\">Дата освоения: </label>" +
+                      "      <input type=\"date\" id=\"date\" name=\"date_dev\"/>" +
+                      "      <label for=\"date_fund\">Дата финансирования: </label>" +
+                      "      <input type=\"date\" id=\"date_fund\" name=\"date_fund\"/>" +
+                      "      <textarea style=\"min-height: 7px;\" name=\"cost\" placeholder=\"Введите стоимость\"></textarea>" +
+                      "      <label for=\"select_status\">Статус задачи: </label>" +
+                      "      <select id=\"select_status\" name=\"status\"><option>В работе</option><option>Отложена</option><option>Завершена</option></select>" +
+                      "      <label for=\"select_user\">Ответственный: </label>" +
+                      "      <select id=\"select_user\" name=\"select_user\"></select>" +
+                      "      <button type=\"submit\">Отправить</button>" +
+                      "    </form>" +
+                      "</div>";
+    body.prepend(popup);
+    const btnClose = popup.querySelector('.signin-header>span');
+    btnClose.onclick = () => {
+        const addtaskpopup = document.getElementById('add_task');
+        addtaskpopup.parentElement.removeChild(addtaskpopup);
+    };
+};
 
 function clickBtnTask1(e) {
     const btn1 = e.currentTarget;
@@ -47,51 +76,36 @@ function clickBtnTask2(e) {
     };
 };
 
-//    const btn = e.currentTarget;
-//    let prev = btn.getAttribute("data-type");
-//    if (btn.closest('.task-view-block').classList.contains('open')) {
-//        btn.closest('.task-view-block').classList.remove('open');
-//        removeTaskSubtasks(btn);
-//    } else {
-//        btn.closest('.task-view-block').classList.add('open');
-//        ajaxGetSubtaskData(btn.getAttribute("data-taskid"), btn, prev);
-//    }
-//}
 function clickBtnTask(e) {
     const btnTask = e.currentTarget;
-//    const opened_structures = leftaside_mainblock.querySelectorAll('.struct-data open');
-//   const data_type = btnTask.parentElement.getAttribute("data-type");
-    console.log(btnTask.parentElement)
-
-    let data_type;
-    if (btnTask.parentElement.getAttribute("data-type")) {
-        data_type = btnTask.parentElement.getAttribute("data-type");
-    } else {
-        data_type = btnTask.getAttribute("data-type");
+    const structData = btnTask.parentElement;
+    data_type = structData.getAttribute('data-type');
+    data_id = structData.getAttribute('data-id');
+    let listParents = [];
+    if (data_type != "company") {
+        let struct_external = structData.parentElement.parentElement;
+        let parentType = data_type;
+        let parentId = data_id;
+        while (parentType != "company") {
+            let structInner = struct_external.parentElement;
+            if (structInner.classList.contains('struct-inner')) {
+                if (parentType != structInner.childNodes[1].getAttribute('data-type')) {
+                    parentType = structInner.childNodes[1].getAttribute('data-type');
+                    parentId = structInner.childNodes[1].getAttribute('data-id');
+                    listParents.push({
+                        'id': parentId,
+                        'type': parentType
+                    });
+                } else {
+                    parentType = structInner.childNodes[1].getAttribute('data-type');
+                }
+            } else { parentType = "company"; };
+            struct_external = structInner.parentElement;
+        }
     }
 
-    let data_id;
-    if (btnTask.parentElement.getAttribute("data-id")) {
-        data_id = btnTask.parentElement.getAttribute("data-id");
-//        console.log(data_id)
-    } else {
-        const tasksHeader = document.getElementById('tasks-header-name');
-        data_id = tasksHeader.getAttribute("data-id");
-    }
-    let data_taskid;
-    if (btnTask.getAttribute("data-taskid")) {
-        data_taskid = btnTask.getAttribute("data-taskid")
-//        console.log(data_taskid)
-    } else {
-        data_taskid = null
-
-    }
     let level = 1
 
-//
-//    console.log("data_type:", data_type);
-//    console.log("data_id:", data_id);
-//    console.log("data_taskid:", data_taskid);
     const body = document.querySelector('body');
     const popup = document.createElement('div');
     popup.classList.add("popup-background");
@@ -156,12 +170,9 @@ function clickBtnTask(e) {
 
         const select_user = formData.get('select_user');
 
-
-
-
         var data = {
                     'id': data_id,
-                    'task_id': data_taskid,
+//                    'task_id': data_taskid,
                     'type': data_type,
                     'csrfmiddlewaretoken': csrfmiddlewaretoken,
                     'name': name,
@@ -171,7 +182,8 @@ function clickBtnTask(e) {
                     'importance': importance,
                     'status': status,
                     'select_user': select_user,
-                    'level': level
+                    'level': level,
+                    'structures': JSON.stringify(listParents)
             };
 
          // Проверка значений перед добавлением
@@ -212,22 +224,15 @@ function clickBtnTask(e) {
 
 function clickBtnSubTask(e) {
     const btnTask = e.currentTarget;
-//   const data_type = btnTask.parentElement.getAttribute("data-type");
     const tasksHeader = document.getElementById('tasks-header-name');
-//    console.log(tasksHeader)
-    console.log('subtask')
 
     let data_type = tasksHeader.getAttribute("data-type");
     let data_id = tasksHeader.getAttribute("data-id");
     let data_taskid = btnTask.getAttribute("data-taskid")
-//    let level = 2
+
     const currentLevel = parseInt(btnTask.parentElement.parentElement.getAttribute('data-level'));
     const nextLevel = currentLevel+1;
-    console.log(nextLevel)
 
-//    console.log("data_type:", data_type);
-//    console.log("data_id:", data_id);
-//    console.log("data_taskid:", data_taskid);
     const body = document.querySelector('body');
     const popup = document.createElement('div');
     popup.classList.add("popup-background");
@@ -306,6 +311,7 @@ function clickBtnSubTask(e) {
                     'status': status,
                     'select_user': select_user,
                     'level': nextLevel
+//                    'structures': JSON.stringify(structureData)
             };
 
          // Проверка значений перед добавлением
@@ -431,6 +437,10 @@ function viewTasks(tasks, type, id, name) {
 
     };
     openTask();
+    const tasksViewName = tasks_data.querySelectorAll('.task-view-name');
+    for (let taskView of tasksViewName) { taskView.onclick = openPopupTask; };
+
+
 //    changeTaskCheck();
 };
 
@@ -455,7 +465,7 @@ function ajaxGetSubTask(btnSubTask, nextLevel) {
     const data_taskid = btnSubTask.parentElement.parentElement.parentElement.getAttribute("data-taskid");
 //    const data_taskid = btnSubTask.querySelector('.task-view-footer .add-subtask').getAttribute('data-taskid');
 
-    console.log("data_taskid:", data_taskid);
+//    console.log("data_taskid:", data_taskid);
 //    const last_task = btnTask.parentElement.getAttribute("data-id");
 //    console.log("last_task:", data_id);
 

@@ -14,6 +14,8 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
 
@@ -48,4 +50,4 @@ urlpatterns = [
 
     path('get-tasks-by-company/', structure.views.get_tasks_by_company, name='get_tasks_by_company'),
     # path('get_users/', tasker.views.get_users, name='get_users'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

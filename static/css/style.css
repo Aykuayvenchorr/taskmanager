@@ -356,7 +356,10 @@ nav div a:hover, nav div span:hover { color: var(--color-text-DarkGreen); }
     margin-left: 10px; /* отступ для сдвига вправо */
     position: relative;
 }
-.comment-view-name, .comment-view-fullname, .task-view-name, .task-view-fullname { padding: 17px; }
+.comment-view-name, .comment-view-fullname, .task-view-name, .task-view-fullname {
+    padding: 17px;
+    cursor: pointer;
+}
 .comment-view-footer,
 .task-view-footer {
     display: flex;

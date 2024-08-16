@@ -4,6 +4,7 @@ const csrfmiddlewaretoken = document.querySelector('nav input[name="csrfmiddlewa
 const header = document.querySelector('header');
 const body_data = document.querySelector('.body-data')
 const tasks_data = document.getElementById('tasks-data')
+const comments_data = document.getElementById('comments-data')
 
 const struct = {
     company: '/getsubcompanies/',
