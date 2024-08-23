@@ -431,6 +431,22 @@ nav div a:hover, nav div span:hover { color: var(--color-text-DarkGreen); }
     display: none !important;
 }
 
+#file-list a {
+color: white; /* Изменяет цвет текста ссылок на белый */
+font-weight: bold; /* Сделает текст ссылок жирным */
+text-decoration: none; /* Убирает подчеркивание ссылок, если это нужно */
+}
+
+#file-list a:hover {
+color: #ccc;
+text-decoration: underline; /* Добавляет подчеркивание при наведении, если это нужно */
+}
+
+.ck-content {
+    color: #000000; /* Устанавливает черный цвет текста по умолчанию */
+    background-color: #ffffff; /* Белый фон для редактора */
+}
+
 
 
 

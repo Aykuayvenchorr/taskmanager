@@ -17,7 +17,7 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 
 import comment.views
 import structure.views
@@ -49,5 +49,8 @@ urlpatterns = [
     path('filter_tasks/', tasker.views.filter_tasks, name='filter_tasks'),
 
     path('get-tasks-by-company/', structure.views.get_tasks_by_company, name='get_tasks_by_company'),
+    path('get_docs/<int:id>/', structure.views.get_docs, name='get_docs'),
+    path('updatecomment/<int:id>/', structure.views.update_comment, name='update_comment'),
+    path("ckeditor5/", include('django_ckeditor_5.urls')),
     # path('get_users/', tasker.views.get_users, name='get_users'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

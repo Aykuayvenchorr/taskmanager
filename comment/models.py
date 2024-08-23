@@ -5,13 +5,26 @@ from django.db.models import SET_NULL
 
 from structure.models import Company, Division, Project, License, Field, Facility
 from user.models import User
+from django_ckeditor_5.fields import CKEditor5Field
+from ckeditor.fields import RichTextField
+
 
 
 class Comment(models.Model):
-    name = models.TextField(blank=False, null=False,
-                            help_text="Краткие сведения", verbose_name="Краткие сведения")
-    full_name = models.TextField(blank=False, null=False,
-                                 help_text="Полный комментарий", verbose_name="Полный комментарий")
+    # name = CKEditor5Field('Text', config_name='extends', blank=False, null=False,
+    #                         help_text="Краткие сведения", verbose_name="Краткие сведения")
+    # full_name = CKEditor5Field('Text', config_name='extends', blank=False, null=False,
+    #                              help_text="Полный комментарий", verbose_name="Полный комментарий")
+    name = CKEditor5Field(blank=False, null=False, help_text="Краткие сведения",
+                          verbose_name="Краткие сведения", config_name='extends')
+    full_name = CKEditor5Field(blank=False, null=False, help_text="Полный комментарий",
+                               verbose_name="Полный комментарий", config_name='extends')
+
+    # name = RichTextField(blank=False, null=False, help_text="Краткие сведения",
+    #                       verbose_name="Краткие сведения", config_name='extends')
+    # full_name = RichTextField(blank=False, null=False, help_text="Полный комментарий",
+    #                            verbose_name="Полный комментарий", config_name='extends')
+
     created = models.DateTimeField(auto_now=True, help_text="Дата создания", verbose_name="Дата создания")
     user = models.ForeignKey(User, on_delete=SET_NULL, null=True, blank=True,
                              help_text="Пользователь", verbose_name="Пользователь")
@@ -38,7 +51,7 @@ class Comment(models.Model):
 class Document(models.Model):
     comment = models.ForeignKey(Comment, on_delete=SET_NULL, blank=True, null=True)
     title = models.CharField(max_length=255)
-    file = models.FileField(upload_to='documents/', help_text="Загрузите документ")
+    file = models.FileField(upload_to='comments/', help_text="Загрузите документ")
 
     class Meta:
         verbose_name = "Документ"

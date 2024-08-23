@@ -1,4 +1,5 @@
 import json
+import os
 from operator import itemgetter
 
 from django.core.exceptions import ValidationError
@@ -230,3 +231,56 @@ def check_comment(request):
     comment.save()
     data = {'check': comment.actual, }
     return JsonResponse(data, safe=False)
+
+
+def get_docs(request, id):
+    try:
+        comment = Comment.objects.get(id=id)
+        files = Document.objects.filter(comment=comment)
+
+        files_data = [{'name': file.title, 'url': file.file.url, 'id': file.id} for file in files]
+
+        # print(files_data)
+        return JsonResponse(files_data, safe=False)
+    except Comment.DoesNotExist:
+        return JsonResponse({'error': 'Comment not found'}, status=404)
+
+
+def update_comment(request, id):
+    if request.method == 'POST':
+        try:
+            # comment_id = request.POST.get('comment_id')
+            comment = Comment.objects.get(id=id)
+
+            # Обновление полей комментария
+            comment.name = request.POST.get('name', comment.name)
+            comment.full_name = request.POST.get('full_name', comment.full_name)
+
+            # Удаление файлов, если они есть в запросе
+            deleted_files = json.loads(request.POST.get('deleted_files', '[]'))
+            for file_id in deleted_files:
+                try:
+                    document = Document.objects.get(id=file_id)
+                    # Удаление файла из файловой системы
+                    if document.file and os.path.isfile(document.file.path):
+                        os.remove(document.file.path)
+                    document.delete()
+                except Document.DoesNotExist:
+                    continue
+
+            # Добавление новых файлов, если они есть
+            files = request.FILES.getlist('file')
+            for file in files:
+                Document.objects.create(comment=comment, title=file.name, file=file)
+
+            # Сохранение обновленного комментария
+            comment.save()
+
+            return JsonResponse({'name': comment.name, 'full_name': comment.full_name})
+
+        except Comment.DoesNotExist:
+            return JsonResponse({'error': 'Comment not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
