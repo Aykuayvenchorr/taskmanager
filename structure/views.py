@@ -175,7 +175,10 @@ def add_comment(request):
             setattr(comment, f_name, rel_instance)
 
     comment.name = request.POST.get('name', None)
-    comment.full_name = request.POST.get('full_name', None)
+    if request.POST.get('full_name'):
+        comment.full_name = request.POST.get('full_name')
+    else:
+        return JsonResponse({'error': 'An error occurred'})
     comment.user = request.user
     setattr(comment, field_name, related_instance)
     # comment.save()

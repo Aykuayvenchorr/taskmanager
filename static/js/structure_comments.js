@@ -25,16 +25,14 @@ function openPopupComment(e) {
     popup.classList.add("popup-background");
     popup.classList.add("open");
     popup.id = 'add_comment';
-    console.log(comment_view_name.innerHTML)
+//    console.log(comment_view_name.innerHTML)
 //    comment_view_name.textContent = comment_view_name.innerText; // Не интерпретирует HTML
 //    comment_view_fullname.textContent = comment_view_fullname.innerText; // Не интерпретирует HTML
-
-
     popup.innerHTML = "<div class=\"comment-add-popup\">" +
                     " <div class=\"signin-header\"><span>&#10006</span></div>" +
                     " <form class=\"comment-form\" id=\"comment-form\" action=\"#\" enctype=\"multipart/form-data\">" +
                     " <textarea class=\"comment-name\" name=\"name\">" + comment_view_name.innerText + "</textarea>" +
-                    " <textarea name=\"full_name\">" + comment_view_fullname.innerText + "</textarea>" +
+                    " <textarea name=\"full_name\" id=\"editor\" class=\"django_ckeditor_5\">" + comment_view_fullname.innerHTML + "</textarea>" +
                      " <label for=\"file-upload\" class=\"file-upload-label\">Загрузить файл</label>" +
                      " <input type=\"file\" id=\"file-upload\" name=\"file\" class=\"file-upload-input\" multiple/>" +
                     " <div id=\"file-list\"></div>" +
@@ -42,43 +40,64 @@ function openPopupComment(e) {
                     " </form>" +
                     "</div>";
     body.prepend(popup);
-
-    const nameTextarea = document.querySelector('textarea[name="name"]');
-    const fullNameTextarea = document.querySelector('textarea[name="full_name"]');
-
-    nameTextarea.value = comment_view_name.innerText;
-    fullNameTextarea.value = comment_view_fullname.innerText;
-
-    // Инициализация CKEditor после вставки текстов
+    const config = {};
+    // Инициализация CKEditor на textarea
     ClassicEditor
-        .create(nameTextarea, {
-                toolbar: ckeditorConfig.extends.toolbar,
-                heading: ckeditorConfig.extends.heading,
-                image: ckeditorConfig.extends.image,
-                table: ckeditorConfig.extends.table
-                })
+        .create(document.querySelector('#editor'), {
+            toolbar: ckeditorConfig.extends.toolbar,
+            heading: ckeditorConfig.extends.heading,
+            image: ckeditorConfig.extends.image,
+            table: ckeditorConfig.extends.table
+        })
         .then(editor => {
-                // Store the editor instance for later use
-                nameTextarea.editor = editor;
-            })
-        .catch(error => {
-            console.error(error);
-        });
-
-    ClassicEditor
-        .create(fullNameTextarea, {
-                toolbar: ckeditorConfig.extends.toolbar,
-                heading: ckeditorConfig.extends.heading,
-                image: ckeditorConfig.extends.image,
-                table: ckeditorConfig.extends.table
-                })
-        .then(editor => {
-                // Store the editor instance for later use
-                fullNameTextarea.editor = editor;
+            // Store the editor instance for later use
+            document.querySelector('#editor').editor = editor;
         })
         .catch(error => {
             console.error(error);
         });
+
+//    window.ClassicEditor
+//       .create( document.querySelector( '#editor' ), config )
+//       .catch( error => {
+//           console.error( error );
+//       } );
+//    const nameTextarea = document.querySelector('textarea[name="name"]');
+//    const fullNameTextarea = document.querySelector('textarea[name="full_name"]');
+//
+//    nameTextarea.value = comment_view_name.innerText;
+//    fullNameTextarea.value = comment_view_fullname.innerText;
+//
+//    // Инициализация CKEditor после вставки текстов
+//    ClassicEditor
+//        .create(nameTextarea, {
+//                toolbar: ckeditorConfig.extends.toolbar,
+//                heading: ckeditorConfig.extends.heading,
+//                image: ckeditorConfig.extends.image,
+//                table: ckeditorConfig.extends.table
+//                })
+//        .then(editor => {
+//                // Store the editor instance for later use
+//                nameTextarea.editor = editor;
+//            })
+//        .catch(error => {
+//            console.error(error);
+//        });
+//
+//    ClassicEditor
+//        .create(fullNameTextarea, {
+//                toolbar: ckeditorConfig.extends.toolbar,
+//                heading: ckeditorConfig.extends.heading,
+//                image: ckeditorConfig.extends.image,
+//                table: ckeditorConfig.extends.table
+//                })
+//        .then(editor => {
+//                // Store the editor instance for later use
+//                fullNameTextarea.editor = editor;
+//        })
+//        .catch(error => {
+//            console.error(error);
+//        });
 
 
     let deletedFiles = []; // Массив для хранения ID удаленных файлов
@@ -131,25 +150,32 @@ function openPopupComment(e) {
     const formElement = document.getElementById('comment-form');
     formElement.addEventListener('submit', (e) => {
         e.preventDefault();
-    // Получаем HTML-контент из CKEditor
-        const nameHtml = nameTextarea.editor.getData();
+        const fullNameTextarea = document.querySelector('textarea[name="full_name"]');
         const fullNameHtml = fullNameTextarea.editor.getData();
+        console.log(fullNameHtml)
 
-        // Функция для преобразования HTML в текст без тегов
-        function htmlToText(html) {
-            const temporaryElement = document.createElement('div');
-            temporaryElement.innerHTML = html;
-            console.log(html)
-            return temporaryElement.textContent || temporaryElement.innerText || '';
-        }
+        // Обновляем значение textarea с текстом
+        fullNameTextarea.value = fullNameHtml;
 
-        // Преобразуем HTML-контент в текст
-        const nameText = htmlToText(nameHtml);
-        const fullNameText = htmlToText(fullNameHtml);
-
-        // Обновляем значения textarea с текстом
-        nameTextarea.value = nameText;
-        fullNameTextarea.value = fullNameText;
+    // Получаем HTML-контент из CKEditor
+//        const nameHtml = nameTextarea.editor.getData();
+//        const fullNameHtml = fullNameTextarea.editor.getData();
+//
+//        // Функция для преобразования HTML в текст без тегов
+//        function htmlToText(html) {
+//            const temporaryElement = document.createElement('div');
+//            temporaryElement.innerHTML = html;
+//            console.log(html)
+//            return temporaryElement.textContent || temporaryElement.innerText || '';
+//        }
+//
+//        // Преобразуем HTML-контент в текст
+//        const nameText = htmlToText(nameHtml);
+//        const fullNameText = htmlToText(fullNameHtml);
+//
+//        // Обновляем значения textarea с текстом
+//        nameTextarea.value = nameText;
+//        fullNameTextarea.value = fullNameText;
         // Update the textarea with CKEditor content before form submission
 //        nameTextarea.editor.updateSourceElement();
 //        fullNameTextarea.editor.updateSourceElement();
@@ -178,7 +204,7 @@ function openPopupComment(e) {
             success: function(response) {
 
                 document.querySelector(`[data-commentid="${commentId}"]`).innerText = response.name;
-                document.querySelector(`[data-commentid="${commentId}"]`).nextSibling.nextSibling.innerText = response.full_name;
+                document.querySelector(`[data-commentid="${commentId}"]`).nextSibling.nextSibling.innerHTML = response.full_name;
 
                 const addcommentpopup = document.getElementById('add_comment');
                 addcommentpopup.parentElement.removeChild(addcommentpopup);
@@ -289,10 +315,6 @@ function clickBtnComment(e) {
             struct_external = structInner.parentElement;
         }
     };
-//    console.log(listParents)
-
-
-
 
     const body = document.querySelector('body');
     const popup = document.createElement('div');
@@ -303,7 +325,7 @@ function clickBtnComment(e) {
                       "  <div class=\"signin-header\"><span>&#10006</span></div>" +
                       "    <form class=\"comment-form\" id=\"comment-form\" action=\"#\"enctype=\"multipart/form-data\">" +
                       "      <textarea class=\"comment-name\" name=\"name\" placeholder=\"Краткое описание\" required></textarea>" +
-                      "      <textarea name=\"full_name\" placeholder=\"Комментарий\" required></textarea>" +
+                      "      <textarea name=\"full_name\" placeholder=\"Комментарий\" id=\"editor\" class=\"django_ckeditor_5\"></textarea>" +
                       "      <label for=\"file-upload\" class=\"file-upload-label\">Загрузить файл</label>" +
                       "      <input type=\"file\" id=\"file-upload\" name=\"file\" class=\"file-upload-input\" multiple/>" +
                       "      <div id=\"file-list\"></div>" +
@@ -311,7 +333,21 @@ function clickBtnComment(e) {
                       "    </form>" +
                       "</div>";
     body.prepend(popup);
-
+ // Инициализация CKEditor на textarea
+    ClassicEditor
+        .create(document.querySelector('#editor'), {
+            toolbar: ckeditorConfig.extends.toolbar,
+            heading: ckeditorConfig.extends.heading,
+            image: ckeditorConfig.extends.image,
+            table: ckeditorConfig.extends.table
+        })
+        .then(editor => {
+            // Store the editor instance for later use
+            document.querySelector('#editor').editor = editor;
+        })
+        .catch(error => {
+            console.error(error);
+        });
     const fileInput = document.getElementById('file-upload');
     const fileList = document.getElementById('file-list');
 
@@ -350,10 +386,16 @@ function clickBtnComment(e) {
     const formElement = document.getElementById('comment-form'); // извлекаем элемент формы
     formElement.addEventListener('submit', (e) => {
         e.preventDefault();
+        const fullNameTextarea = document.querySelector('textarea[name="full_name"]');
+        const fullNameHtml = fullNameTextarea.editor.getData();
+        console.log(fullNameHtml)
+
+        // Обновляем значение textarea с текстом
+        fullNameTextarea.value = fullNameHtml
         const formData = new FormData(formElement); // создаём объект FormData, передаём в него элемент формы
         // теперь можно извлечь данные
         const name = formData.get('name');
-        const full_name = formData.get('full_name');
+//        const full_name = formData.get('full_name');
         // Добавляем id и type в formData
         formData.append('id', data_id);
         formData.append('type', data_type);

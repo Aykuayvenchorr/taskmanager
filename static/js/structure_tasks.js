@@ -18,6 +18,17 @@ btnsClickTask();
 function openPopupTask(e) {
     const task_view_name = e.currentTarget;
     const task_view_fullname = e.currentTarget.nextSibling.nextSibling;
+    const taskBlock = task_view_name.closest('.task-view-block');
+
+    const taskDateBeginElement = taskBlock.querySelector('.task-view-date-begin');
+    const taskDateBegin = taskDateBeginElement.textContent.replace('Дата начала: ', '').trim();
+
+    const taskTermElement = taskBlock.querySelector('.task-view-term');
+    const taskTerm = taskTermElement.textContent.replace('Срок: ', '').trim();
+
+    const taskImportanceElement = taskBlock.querySelector('.task-view-importance');
+    const taskImportance = taskImportanceElement.textContent.replace('Важность: ', '').trim();
+
     const body = document.querySelector('body');
     const popup = document.createElement('div');
     popup.classList.add("popup-background");
@@ -27,10 +38,11 @@ function openPopupTask(e) {
                       "  <div class=\"signin-header\"><span>&#10006</span></div>" +
                       "    <form class=\"task-form\" id=\"task-form\" action=\"#\">" +
                       "      <textarea class=\"task-name\" name=\"name\">" + task_view_name.innerText + "</textarea>" +
-                      "      <textarea name=\"descr_task\">" + task_view_fullname.innerText + "</textarea>" +
+                      "      <textarea name=\"descr_task\">" + task_view_fullname.innerHTML + "</textarea>" +
                       "      <label for=\"date\">Дата начала: </label>" +
-                      "      <input type=\"date\" id=\"date\" name=\"date\"/>" +
-                      "      <textarea style=\"min-height: 7px;\" name=\"term\" placeholder=\"Введите срок задачи в днях\" required></textarea>" +
+                      "      <input type=\"date\" id=\"date\" name=\"date\" value=\"" + taskDateBegin + "\" />" +
+                      "      <label for=\"term\">Срок задачи в днях: </label>" +
+                      "      <textarea id=\"term\" style=\"min-height: 7px;\" name=\"term\">" + taskTerm + "</textarea>" +
                       "      <label for=\"select_importance\">Важность задачи: </label>" +
                       "      <select id=\"select_importance\" name=\"importance\"><option>Высокая степень важности</option><option>Средняя степень важности</option><option>Низкая степень важности</option></select>" +
                       "      <label for=\"date_dev\">Дата освоения: </label>" +

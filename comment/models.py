@@ -9,7 +9,6 @@ from django_ckeditor_5.fields import CKEditor5Field
 from ckeditor.fields import RichTextField
 
 
-
 class Comment(models.Model):
     # name = CKEditor5Field('Text', config_name='extends', blank=False, null=False,
     #                         help_text="Краткие сведения", verbose_name="Краткие сведения")
