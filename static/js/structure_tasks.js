@@ -17,6 +17,33 @@ btnsClickTask();
 
 function openPopupTask(e) {
     const task_view_name = e.currentTarget;
+    const taskId = task_view_name.getAttribute('data-taskid');
+
+
+    $.ajax({
+        url: `/gettask/${taskId}/`,
+        method: 'GET',
+        dataType: 'json',
+        data: taskId,
+        success: function(task) {
+                const taskImportance = task.importance;
+                console.log(taskImportance)
+                const taskDateDev = task.date_develop;
+                const taskDateFund = task.date_funding;
+                const taskCost = task.cost;
+//                const selectUser = document.getElementById('select_user');
+//                users.forEach(user => {
+//                    const option = document.createElement('option');
+//                    option.value = user.id;
+//                    option.text = user.name + ' ' + user.surname;
+//                    selectUser.appendChild(option);
+//                    });
+                },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error('Ошибка получения списка пользователей:', textStatus, errorThrown);
+        }
+    });
+
     const task_view_fullname = e.currentTarget.nextSibling.nextSibling;
     const taskBlock = task_view_name.closest('.task-view-block');
 
@@ -26,8 +53,17 @@ function openPopupTask(e) {
     const taskTermElement = taskBlock.querySelector('.task-view-term');
     const taskTerm = taskTermElement.textContent.replace('Срок: ', '').trim();
 
-    const taskImportanceElement = taskBlock.querySelector('.task-view-importance');
-    const taskImportance = taskImportanceElement.textContent.replace('Важность: ', '').trim();
+//    const taskImportanceElement = taskBlock.querySelector('.task-view-importance');
+//    const taskImportance = taskImportanceElement.textContent;
+
+    const taskResponsibleElement = taskBlock.querySelector('.task-view-user-responsible');
+    const taskResponsible = taskResponsibleElement.textContent.replace('Ответственный: ', '').trim();
+
+    const taskStatusElement = taskBlock.querySelector('.task-view-status');
+    const taskStatus = taskStatusElement.textContent.replace('Статус: ', '').trim();
+
+//    const taskDateDevElement = taskBlock.querySelector('.task-view-date-begin');
+//    const taskDateDev = taskDateBeginElement.textContent.replace('Дата начала: ', '').trim();
 
     const body = document.querySelector('body');
     const popup = document.createElement('div');
@@ -44,16 +80,16 @@ function openPopupTask(e) {
                       "      <label for=\"term\">Срок задачи в днях: </label>" +
                       "      <textarea id=\"term\" style=\"min-height: 7px;\" name=\"term\">" + taskTerm + "</textarea>" +
                       "      <label for=\"select_importance\">Важность задачи: </label>" +
-                      "      <select id=\"select_importance\" name=\"importance\"><option>Высокая степень важности</option><option>Средняя степень важности</option><option>Низкая степень важности</option></select>" +
+                      "      <select id=\"select_importance\" name=\"importance\"><option>" + taskImportance + "</option><option>Высокая степень важности</option><option>Средняя степень важности</option><option>Низкая степень важности</option></select>" +
                       "      <label for=\"date_dev\">Дата освоения: </label>" +
-                      "      <input type=\"date\" id=\"date\" name=\"date_dev\"/>" +
+                      "      <input type=\"date\" id=\"date\" name=\"date_dev\" value=\"" + '2000-05-16' + "\" />" +
                       "      <label for=\"date_fund\">Дата финансирования: </label>" +
                       "      <input type=\"date\" id=\"date_fund\" name=\"date_fund\"/>" +
                       "      <textarea style=\"min-height: 7px;\" name=\"cost\" placeholder=\"Введите стоимость\"></textarea>" +
                       "      <label for=\"select_status\">Статус задачи: </label>" +
-                      "      <select id=\"select_status\" name=\"status\"><option>В работе</option><option>Отложена</option><option>Завершена</option></select>" +
+                      "      <select id=\"select_status\" name=\"status\"><option>" + taskStatus + "</option><option>В работе</option><option>Отложена</option><option>Завершена</option></select>" +
                       "      <label for=\"select_user\">Ответственный: </label>" +
-                      "      <select id=\"select_user\" name=\"select_user\"></select>" +
+                      "      <select id=\"select_user\" name=\"select_user\"><option>" + 'taskResponsible' + "</option></select>" +
                       "      <button type=\"submit\">Отправить</button>" +
                       "    </form>" +
                       "</div>";
@@ -63,6 +99,33 @@ function openPopupTask(e) {
         const addtaskpopup = document.getElementById('add_task');
         addtaskpopup.parentElement.removeChild(addtaskpopup);
     };
+
+
+
+
+    // Отправляем данные на сервер
+    $.ajax({
+            url:  `/updatetask/${taskId}/`,
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRFToken': csrfmiddlewaretoken
+            },
+            success: function(response) {
+
+                document.querySelector(`[data-commentid="${commentId}"]`).innerText = response.name;
+                document.querySelector(`[data-commentid="${commentId}"]`).nextSibling.nextSibling.innerHTML = response.full_name;
+
+                const addcommentpopup = document.getElementById('add_comment');
+                addcommentpopup.parentElement.removeChild(addcommentpopup);
+                console.log('Комментарий успешно обновлен');
+            },
+            error: function(data) {
+                alert('Ошибка обновления комментария!');
+            }
+        });
 };
 
 function clickBtnTask1(e) {

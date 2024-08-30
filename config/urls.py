@@ -47,7 +47,7 @@ urlpatterns = [
     path('checkcomment/', structure.views.check_comment, name='check_comment'),
     path('get_users/', tasker.views.get_users, name='get_users'),
     path('filter_tasks/', tasker.views.filter_tasks, name='filter_tasks'),
-
+    path('gettask/<int:id>/', tasker.views.get_task, name='get_task'),
     path('get-tasks-by-company/', structure.views.get_tasks_by_company, name='get_tasks_by_company'),
     path('get_docs/<int:id>/', structure.views.get_docs, name='get_docs'),
     path('updatecomment/<int:id>/', structure.views.update_comment, name='update_comment'),

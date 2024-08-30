@@ -151,6 +151,11 @@ def get_tasks(request):
     return JsonResponse(data, safe=False)
 
 
+def get_task(request, id):
+    task = Task.objects.get(id=id)
+    users = User.objects.all()
+    return JsonResponse(task, safe=False)
+
 def get_subtasks(request):
     kwargs = {request.POST['type']: request.POST['id']}
     level = int(request.POST.get('level', 2))
