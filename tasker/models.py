@@ -101,3 +101,12 @@ class TaskDependencies(models.Model):
 
     def __str__(self):
         return f'{self.dependent.name} от {self.defining.name}'
+
+class DocumentTask(models.Model):
+    task = models.ForeignKey(Task, on_delete=SET_NULL, blank=True, null=True)
+    title = models.CharField(max_length=255)
+    file = models.FileField(upload_to='tasks/', help_text="Загрузите документ")
+
+    class Meta:
+        verbose_name = "Документ"
+        verbose_name_plural = "Документы"

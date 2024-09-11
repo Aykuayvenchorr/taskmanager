@@ -17,8 +17,7 @@ btnsClickTask();
 
 function openPopupTask(e) {
     const task_view_name = e.currentTarget;
-    const taskId = task_view_name.getAttribute('data-taskid');
-
+    const taskId = task_view_name.parentElement.getAttribute('data-taskid');
 
     $.ajax({
         url: `/gettask/${taskId}/`,
@@ -26,74 +25,117 @@ function openPopupTask(e) {
         dataType: 'json',
         data: taskId,
         success: function(task) {
+                const taskName = task.name;
+                const taskDescr = task.descr_task;
+                const taskBegin = task.date_begin;
+                const taskTerm = task.term;
                 const taskImportance = task.importance;
-                console.log(taskImportance)
                 const taskDateDev = task.date_develop;
                 const taskDateFund = task.date_funding;
                 const taskCost = task.cost;
-//                const selectUser = document.getElementById('select_user');
-//                users.forEach(user => {
-//                    const option = document.createElement('option');
-//                    option.value = user.id;
-//                    option.text = user.name + ' ' + user.surname;
-//                    selectUser.appendChild(option);
-//                    });
+                const taskStatus = task.status;
+                const taskRespon = task.user_responsible;
+                const userId = task.user_responsible_id
+                UpdateTask(taskName, taskDescr, taskBegin, taskTerm, taskImportance, taskDateDev, taskDateFund, taskCost, taskStatus, taskRespon, taskId, userId)
                 },
         error: function(jqXHR, textStatus, errorThrown) {
             console.error('Ошибка получения списка пользователей:', textStatus, errorThrown);
         }
     });
+};
 
-    const task_view_fullname = e.currentTarget.nextSibling.nextSibling;
-    const taskBlock = task_view_name.closest('.task-view-block');
-
-    const taskDateBeginElement = taskBlock.querySelector('.task-view-date-begin');
-    const taskDateBegin = taskDateBeginElement.textContent.replace('Дата начала: ', '').trim();
-
-    const taskTermElement = taskBlock.querySelector('.task-view-term');
-    const taskTerm = taskTermElement.textContent.replace('Срок: ', '').trim();
-
-//    const taskImportanceElement = taskBlock.querySelector('.task-view-importance');
-//    const taskImportance = taskImportanceElement.textContent;
-
-    const taskResponsibleElement = taskBlock.querySelector('.task-view-user-responsible');
-    const taskResponsible = taskResponsibleElement.textContent.replace('Ответственный: ', '').trim();
-
-    const taskStatusElement = taskBlock.querySelector('.task-view-status');
-    const taskStatus = taskStatusElement.textContent.replace('Статус: ', '').trim();
+//    const task_view_fullname = e.currentTarget.nextSibling.nextSibling;
+//    const taskBlock = task_view_name.closest('.task-view-block');
+//
+//    const taskDateBeginElement = taskBlock.querySelector('.task-view-date-begin');
+//    const taskDateBegin = taskDateBeginElement.textContent.replace('Дата начала: ', '').trim();
+//
+//    const taskTermElement = taskBlock.querySelector('.task-view-term');
+//    const taskTerm = taskTermElement.textContent.replace('Срок: ', '').trim();
+//
+////    const taskImportanceElement = taskBlock.querySelector('.task-view-importance');
+////    const taskImportance = taskImportanceElement.textContent;
+//
+//    const taskResponsibleElement = taskBlock.querySelector('.task-view-user-responsible');
+//    const taskResponsible = taskResponsibleElement.textContent.replace('Ответственный: ', '').trim();
+//
+//    const taskStatusElement = taskBlock.querySelector('.task-view-status');
+//    const taskStatus = taskStatusElement.textContent.replace('Статус: ', '').trim();
 
 //    const taskDateDevElement = taskBlock.querySelector('.task-view-date-begin');
 //    const taskDateDev = taskDateBeginElement.textContent.replace('Дата начала: ', '').trim();
-
+function UpdateTask(taskName, taskDescr, taskBegin, taskTerm, taskImportance, taskDateDev, taskDateFund, taskCost, taskStatus, taskRespon, taskId, userId) {
     const body = document.querySelector('body');
     const popup = document.createElement('div');
     popup.classList.add("popup-background");
     popup.classList.add("open");
     popup.id = 'add_task';
+
+
+
     popup.innerHTML = "<div class=\"task-add-popup\">" +
                       "  <div class=\"signin-header\"><span>&#10006</span></div>" +
                       "    <form class=\"task-form\" id=\"task-form\" action=\"#\">" +
-                      "      <textarea class=\"task-name\" name=\"name\">" + task_view_name.innerText + "</textarea>" +
-                      "      <textarea name=\"descr_task\">" + task_view_fullname.innerHTML + "</textarea>" +
+                      "      <textarea class=\"task-name\" name=\"name\">" + taskName + "</textarea>" +
+                      "      <textarea name=\"descr_task\" id=\"editor\" class=\"django_ckeditor_5\">" + taskDescr + "</textarea>" +
                       "      <label for=\"date\">Дата начала: </label>" +
-                      "      <input type=\"date\" id=\"date\" name=\"date\" value=\"" + taskDateBegin + "\" />" +
+                      "      <input type=\"date\" id=\"date\" name=\"date\" value=\"" + taskBegin + "\" />" +
                       "      <label for=\"term\">Срок задачи в днях: </label>" +
                       "      <textarea id=\"term\" style=\"min-height: 7px;\" name=\"term\">" + taskTerm + "</textarea>" +
                       "      <label for=\"select_importance\">Важность задачи: </label>" +
                       "      <select id=\"select_importance\" name=\"importance\"><option>" + taskImportance + "</option><option>Высокая степень важности</option><option>Средняя степень важности</option><option>Низкая степень важности</option></select>" +
                       "      <label for=\"date_dev\">Дата освоения: </label>" +
-                      "      <input type=\"date\" id=\"date\" name=\"date_dev\" value=\"" + '2000-05-16' + "\" />" +
+                      "      <input type=\"date\" id=\"date\" name=\"date_dev\" value=\"" + taskDateDev + "\" />" +
                       "      <label for=\"date_fund\">Дата финансирования: </label>" +
-                      "      <input type=\"date\" id=\"date_fund\" name=\"date_fund\"/>" +
-                      "      <textarea style=\"min-height: 7px;\" name=\"cost\" placeholder=\"Введите стоимость\"></textarea>" +
+                      "      <input type=\"date\" id=\"date_fund\" name=\"date_fund\"value=\"" + taskDateFund + "\" />" +
+                      "      <label for=\"cost\">Стоимость, руб: </label>" +
+                      "      <textarea id=\"cost\" style=\"min-height: 7px;\" name=\"cost\">" + taskCost + "</textarea>" +
                       "      <label for=\"select_status\">Статус задачи: </label>" +
                       "      <select id=\"select_status\" name=\"status\"><option>" + taskStatus + "</option><option>В работе</option><option>Отложена</option><option>Завершена</option></select>" +
                       "      <label for=\"select_user\">Ответственный: </label>" +
-                      "      <select id=\"select_user\" name=\"select_user\"><option>" + 'taskResponsible' + "</option></select>" +
+                      "      <select id=\"select_user\" name=\"select_user\"><option value=\"" + userId + "\"" + ">" + taskRespon + "</option></select>" +
                       "      <button type=\"submit\">Отправить</button>" +
                       "    </form>" +
                       "</div>";
     body.prepend(popup);
+
+    // Запрос на получение списка пользователей
+    $.ajax({
+        url: '/get_users/',
+        method: 'GET',
+        dataType: 'json',
+        success: function(users) {
+            const selectUser = document.getElementById('select_user');
+            users.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.id;
+                option.text = user.name + ' ' + user.surname;
+                selectUser.appendChild(option);
+            });
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error('Ошибка получения списка пользователей:', textStatus, errorThrown);
+        }
+    });
+
+    const config = {};
+    // Инициализация CKEditor на textarea
+    ClassicEditor
+        .create(document.querySelector('#editor'), {
+            toolbar: ckeditorConfig.extends.toolbar,
+            heading: ckeditorConfig.extends.heading,
+            image: ckeditorConfig.extends.image,
+            table: ckeditorConfig.extends.table
+        })
+        .then(editor => {
+            // Store the editor instance for later use
+            document.querySelector('#editor').editor = editor;
+        })
+        .catch(error => {
+            console.error(error);
+        });
+
+
     const btnClose = popup.querySelector('.signin-header>span');
     btnClose.onclick = () => {
         const addtaskpopup = document.getElementById('add_task');
@@ -101,32 +143,76 @@ function openPopupTask(e) {
     };
 
 
+    // Обработка отправки формы
+    const formElement = document.getElementById('task-form');
+    formElement.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const taskDesr = document.querySelector('textarea[name="descr_task"]');
+        const taskDesrHtml = taskDesr.editor.getData();
+        console.log(taskDesrHtml)
 
+        // Обновляем значение textarea с текстом
+        taskDesr.value = taskDesrHtml;
 
-    // Отправляем данные на сервер
-    $.ajax({
-            url:  `/updatetask/${taskId}/`,
-            method: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            headers: {
-                'X-CSRFToken': csrfmiddlewaretoken
-            },
-            success: function(response) {
+        const formData = new FormData(formElement);
 
-                document.querySelector(`[data-commentid="${commentId}"]`).innerText = response.name;
-                document.querySelector(`[data-commentid="${commentId}"]`).nextSibling.nextSibling.innerHTML = response.full_name;
+        // Добавляем массив с ID удаленных файлов в данные формы
+//        formData.append('deleted_files', JSON.stringify(deletedFiles));
 
-                const addcommentpopup = document.getElementById('add_comment');
-                addcommentpopup.parentElement.removeChild(addcommentpopup);
-                console.log('Комментарий успешно обновлен');
-            },
-            error: function(data) {
-                alert('Ошибка обновления комментария!');
-            }
+        // Отправляем данные на сервер
+        $.ajax({
+                url:  `/updatetask/${taskId}/`,
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: {
+                    'X-CSRFToken': csrfmiddlewaretoken
+                },
+                success: function(response) {
+                    if (response.level > 1) {
+                        console.log('for subtask')
+                        const taskElement = document.querySelector(`[data-taskid="${taskId}"]`);
+
+                        document.querySelector(`[data-taskid="${taskId}"]`).childNodes[1].innerText = response.name;
+                        document.querySelector(`[data-taskid="${taskId}"]`).childNodes[3].innerHTML = response.descr_task;
+
+                        const status = taskElement.querySelector('.task-view-status');
+                        const importance = taskElement.querySelector('.task-view-importance');
+                        const date_beg = taskElement.querySelector('.task-view-date-begin');
+                        const term = taskElement.querySelector('.task-view-term');
+                        const select_user = taskElement.querySelector('.task-view-user-responsible');
+
+//
+                        status.innerHTML = response.status;
+                        importance.innerHTML = response.importance;
+                        date_beg.innerHTML = response.date;
+                        term.innerHTML = response.term;
+                        select_user.innerHTML = response.select_user;
+                        console.log('Подзадача успешно обновлена');
+                    } else {
+
+                        document.querySelector(`[data-taskid="${taskId}"]`).childNodes[0].innerText = response.name;
+                        document.querySelector(`[data-taskid="${taskId}"]`).childNodes[2].innerHTML = response.descr_task;
+
+                        document.querySelector(`[data-taskid="${taskId}"]`).childNodes[1].childNodes[1].innerHTML = response.status;
+                        document.querySelector(`[data-taskid="${taskId}"]`).childNodes[1].childNodes[2].innerHTML = response.importance;
+                        document.querySelector(`[data-taskid="${taskId}"]`).childNodes[1].childNodes[3].innerHTML = response.date;
+                        document.querySelector(`[data-taskid="${taskId}"]`).childNodes[1].childNodes[4].innerHTML = response.term;
+                        document.querySelector(`[data-taskid="${taskId}"]`).childNodes[1].childNodes[0].childNodes[3].innerHTML = response.select_user;
+                        console.log('Задача успешно обновлена');
+                    };
+                    const addtaskpopup = document.getElementById('add_task');
+                    addtaskpopup.parentElement.removeChild(addtaskpopup);
+                },
+                error: function(data) {
+                    console.log(data)
+                    alert('Ошибка обновления комментария!');
+                }
         });
+   });
 };
+
 
 function clickBtnTask1(e) {
     const btn1 = e.currentTarget;
@@ -638,6 +724,9 @@ function viewSubTasks(tasks, type, id, btnSubTask, level) {
   const subTasks = tasks_data.querySelectorAll('.add-subtask');
   const tasksOpen = tasks_data.querySelectorAll('.task-btn-open');
 
+  const tasksViewName = tasks_data.querySelectorAll('.task-view-name');
+  for (let taskView of tasksViewName) { taskView.onclick = openPopupTask; };
+
 
   for (let subTask of subTasks) { subTask.onclick = clickBtnSubTask; };
   for (let taskOpen of tasksOpen) { taskOpen.onclick = clickSubTasks; };
@@ -714,6 +803,11 @@ function viewSubTasks(tasks, type, id, btnSubTask, level) {
     });
   const subTasks = tasks_data.querySelectorAll('.add-subtask');
   const tasksOpen = tasks_data.querySelectorAll('.task-btn-open');
+
+  const tasksViewName = tasks_data.querySelectorAll('.task-view-name');
+  for (let taskView of tasksViewName) { taskView.onclick = openPopupTask; };
+
+
 
   for (let subTask of subTasks) { subTask.onclick = clickBtnSubTask; };
   for (let taskOpen of tasksOpen) { taskOpen.onclick = clickSubTasks; };
@@ -846,13 +940,13 @@ function loadTasks() {
 
 // ФИЛЬТРЫ
 
-document.addEventListener('DOMContentLoaded', () => {
-// Получаем элемент фильтра и задаем обработчик событий
-   const filterSelect = document.getElementById('responsible-filter');
-   filterSelect.addEventListener('change', applyFilter);
-   // Здесь можно сделать AJAX-запрос для динамической загрузки списка пользователей
-   loadUsers();
-});
+//document.addEventListener('DOMContentLoaded', () => {
+//// Получаем элемент фильтра и задаем обработчик событий
+//   const filterSelect = document.getElementById('responsible-filter');
+//   filterSelect.addEventListener('change', applyFilter);
+//   // Здесь можно сделать AJAX-запрос для динамической загрузки списка пользователей
+//   loadUsers();
+//});
 
 //function applyFilter() {
 //    const selectedUser = document.getElementById('responsible-filter').value;
@@ -902,52 +996,52 @@ document.addEventListener('DOMContentLoaded', () => {
 //        }
 //    });
 //}
-
-
-async function applyFilter() {
-    const selectedUser = document.getElementById('responsible-filter').value;
-    if (selectedUser === 'all') {
-            // Если выбран "all", показываем все задачи
-            taskBlock.style.display = ''};
-    const tasksContainer = document.getElementById('tasks-data');
-
-    // Очистка контейнера задач перед загрузкой новых данных
-    tasksContainer.innerHTML = '';
-
-    // Запрос на сервер для получения задач
-    const response = await fetch(`/filter_tasks/?responsible_user_id=${selectedUser}`);
-    const tasks = await response.json();
-
-    // Отображение задач
-    tasks.forEach(task => {
-        // Создание элемента задачи
-        const taskBlock = document.createElement('div');
-        taskBlock.classList.add(task.level === 1 ? 'task-view-block' : 'subtask-view-block');
-
-        taskBlock.innerHTML = `
-            <div class="task-view-name">${task.name}</div>
-            <div class="task-view-footer">
-                <div class="task-view-info">
-                    <div class="task-view-btn" title="Развернуть описание задачи">
-                        <svg fill="white"><path class="struct-btn-path" d="M 0,0 10,0 5,5 Z"/></svg>
-                    </div>
-                    <div class="task-btn-open" title="Развернуть подзадачу">
-                        <svg fill="white"><path class="struct-btn-path" d="M 0,0 10,0 5,5 10,5 5,10 0,5 5,5 Z"/></svg>
-                    </div>
-                    <div class="task-view-user-created">Создал: ${task.user_created}</div>
-                    <div class="task-view-user-responsible">Ответственный: ${task.user_responsible}</div>
-                </div>
-                <div class="task-view-status">Статус: ${task.status}</div>
-                <div class="task-view-importance">Важность: ${task.importance}</div>
-                <div class="task-view-date-begin">Дата начала: ${task.date_begin}</div>
-                <div class="task-view-term">Срок: ${task.term}</div>
-            </div>
-            <div class="task-view-fullname">${task.descr_task}</div>
-        `;
-
-        tasksContainer.appendChild(taskBlock);
-    });
-}
+//
+//
+//async function applyFilter() {
+//    const selectedUser = document.getElementById('responsible-filter').value;
+//    if (selectedUser === 'all') {
+//            // Если выбран "all", показываем все задачи
+//            taskBlock.style.display = ''};
+//    const tasksContainer = document.getElementById('tasks-data');
+//
+//    // Очистка контейнера задач перед загрузкой новых данных
+//    tasksContainer.innerHTML = '';
+//
+//    // Запрос на сервер для получения задач
+//    const response = await fetch(`/filter_tasks/?responsible_user_id=${selectedUser}`);
+//    const tasks = await response.json();
+//
+//    // Отображение задач
+//    tasks.forEach(task => {
+//        // Создание элемента задачи
+//        const taskBlock = document.createElement('div');
+//        taskBlock.classList.add(task.level === 1 ? 'task-view-block' : 'subtask-view-block');
+//
+//        taskBlock.innerHTML = `
+//            <div class="task-view-name">${task.name}</div>
+//            <div class="task-view-footer">
+//                <div class="task-view-info">
+//                    <div class="task-view-btn" title="Развернуть описание задачи">
+//                        <svg fill="white"><path class="struct-btn-path" d="M 0,0 10,0 5,5 Z"/></svg>
+//                    </div>
+//                    <div class="task-btn-open" title="Развернуть подзадачу">
+//                        <svg fill="white"><path class="struct-btn-path" d="M 0,0 10,0 5,5 10,5 5,10 0,5 5,5 Z"/></svg>
+//                    </div>
+//                    <div class="task-view-user-created">Создал: ${task.user_created}</div>
+//                    <div class="task-view-user-responsible">Ответственный: ${task.user_responsible}</div>
+//                </div>
+//                <div class="task-view-status">Статус: ${task.status}</div>
+//                <div class="task-view-importance">Важность: ${task.importance}</div>
+//                <div class="task-view-date-begin">Дата начала: ${task.date_begin}</div>
+//                <div class="task-view-term">Срок: ${task.term}</div>
+//            </div>
+//            <div class="task-view-fullname">${task.descr_task}</div>
+//        `;
+//
+//        tasksContainer.appendChild(taskBlock);
+//    });
+//}
 
 //function applyFilter() {
 //    const selectedUser = document.getElementById('responsible-filter').value;
@@ -974,30 +1068,31 @@ async function applyFilter() {
 
 
 
-
-function loadUsers() {
-        // Пример AJAX-запроса для получения списка пользователей
-        fetch('/get_users/')
-            .then(response => response.json())
-            .then(users => {
-                const filterSelect = document.getElementById('responsible-filter');
-                // Очистка текущих опций (если требуется)
-                filterSelect.innerHTML = '';
-
-                // Добавление опции "all" для сброса фильтра
-                const allOption = document.createElement('option');
-                allOption.value = 'all';
-                allOption.textContent = 'Все пользователи';
-                filterSelect.appendChild(allOption);
-
-                // Добавление пользователей в выпадающий список
-                users.forEach(user => {
-                    const option = document.createElement('option');
-//                    option.value = user.username; // Значение может зависеть от структуры ваших данных
-                    option.value = `${user.id}`; // Значение может зависеть от структуры ваших данных
-                    option.textContent = `${user.surname} ${user.name}`; // Отображаемое имя пользователя
-                    filterSelect.appendChild(option);
-                });
-            })
-            .catch(error => console.error('Ошибка загрузки списка пользователей:', error));
-    }
+//
+//function loadUsers() {
+//        // Пример AJAX-запроса для получения списка пользователей
+//        fetch('/get_users/')
+//            .then(response => response.json())
+//            .then(users => {
+//                const filterSelect = document.getElementById('responsible-filter');
+//                // Очистка текущих опций (если требуется)
+//                filterSelect.innerHTML = '';
+//
+//                // Добавление опции "all" для сброса фильтра
+//                const allOption = document.createElement('option');
+//                allOption.value = 'all';
+//                allOption.textContent = 'Все пользователи';
+//                filterSelect.appendChild(allOption);
+//
+//                // Добавление пользователей в выпадающий список
+//                users.forEach(user => {
+//                    const option = document.createElement('option');
+////                    option.value = user.username; // Значение может зависеть от структуры ваших данных
+//                    option.value = `${user.id}`; // Значение может зависеть от структуры ваших данных
+//                    option.textContent = `${user.surname} ${user.name}`; // Отображаемое имя пользователя
+//                    filterSelect.appendChild(option);
+//                });
+//            })
+//            .catch(error => console.error('Ошибка загрузки списка пользователей:', error));
+//    };
+//

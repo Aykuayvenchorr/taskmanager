@@ -153,8 +153,24 @@ def get_tasks(request):
 
 def get_task(request, id):
     task = Task.objects.get(id=id)
+    tsk = {
+        'id': task.id,
+        'name': task.name,
+        'level': task.level,
+        'descr_task': task.descr_task,
+        'user_created': f'{task.user_created}',
+        'user_responsible': f'{task.user_responsible}',
+        'user_responsible_id': task.user_responsible.id,
+        'status': task.status,
+        'importance': task.importance.split()[0],
+        'date_begin': task.date_begin,
+        'term': task.term,
+        'date_develop': task.date_develop,
+        'date_funding': task.date_funding,
+        'cost': task.cost
+    }
     users = User.objects.all()
-    return JsonResponse(task, safe=False)
+    return JsonResponse(tsk, safe=False)
 
 def get_subtasks(request):
     kwargs = {request.POST['type']: request.POST['id']}
@@ -211,3 +227,75 @@ def filter_tasks(request):
         data.append(task_data)
 
     return JsonResponse(data, safe=False)
+
+
+def update_task(request, id):
+    if request.method == 'POST':
+        try:
+            # comment_id = request.POST.get('comment_id')
+            task = Task.objects.get(id=id)
+
+            # Обновление полей комментария
+            task.name = request.POST.get('name', task.name)
+            task.descr_task = request.POST.get('descr_task', task.descr_task)
+            task.date_begin = request.POST.get('date', task.date_begin)
+            task.term = request.POST.get('term', task.term)
+            task.importance = request.POST.get('importance', task.importance)
+            task.date_develop = request.POST.get('date_dev', task.date_develop)
+            task.date_funding = request.POST.get('date_fund', task.date_funding)
+            task.cost = request.POST.get('cost', task.cost)
+            task.status = request.POST.get('status', task.status)
+            # task.user_responsible = request.POST.get('select_user', task.user_responsible)
+
+            # Получение ID пользователя из POST и назначение ответственного
+            user_id = request.POST.get('select_user')
+            print(user_id)
+            if user_id:
+                try:
+                    user_responsible = User.objects.get(id=user_id)  # Предполагается, что используется модель User
+                    task.user_responsible = user_responsible
+                except User.DoesNotExist:
+                    return JsonResponse({'error': 'User not found'}, status=404)
+
+
+
+            # Удаление файлов, если они есть в запросе
+            deleted_files = json.loads(request.POST.get('deleted_files', '[]'))
+            for file_id in deleted_files:
+                try:
+                    document = Document.objects.get(id=file_id)
+                    # Удаление файла из файловой системы
+                    if document.file and os.path.isfile(document.file.path):
+                        os.remove(document.file.path)
+                    document.delete()
+                except Document.DoesNotExist:
+                    continue
+
+            # Добавление новых файлов, если они есть
+            files = request.FILES.getlist('file')
+            for file in files:
+                Document.objects.create(task=task, title=file.name, file=file)
+
+            # Сохранение обновленного комментария
+            task.save()
+
+            return JsonResponse({'name': task.name,
+                                 'descr_task': task.descr_task,
+                                 'date': task.date_begin,
+                                 'term': task.term,
+                                 'importance': task.importance,
+                                 'date_dev': task.date_develop,
+                                 'date_fund': task.date_funding,
+                                 'cost': task.cost,
+                                 'status': task.status,
+                                 'select_user': f'{task.user_responsible.name} {task.user_responsible.surname}',
+                                 'level': task.level
+                                 # 'select_user': task.user_responsible
+                                 })
+
+        except Task.DoesNotExist:
+            return JsonResponse({'error': 'Comment not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
