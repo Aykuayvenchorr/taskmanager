@@ -1,4 +1,5 @@
 import json
+import os
 
 from django.core.exceptions import ValidationError
 from django.shortcuts import render, get_object_or_404
@@ -11,7 +12,7 @@ from django.contrib.auth.decorators import login_required
 from structure.models import Company, Division, Project, License, Field, Facility
 from structure.views import menu_structure
 
-from tasker.models import Task
+from tasker.models import Task, DocumentTask
 from user.models import User
 
 model_mapping = {
@@ -71,6 +72,16 @@ def add_task(request):
     setattr(task, field_name, related_instance)
     try:
         task.save()
+
+        # Обрабатываем файлы из запроса
+        files = request.FILES.getlist('file')  # Получаем список файлов
+        for file in files:
+            document = DocumentTask()
+            document.task = task
+            document.title = file.name
+            document.file = file
+            document.save()
+
         m = {'message': 'Task added successfully', 'name': task.name}
         return JsonResponse(m)
     except ValidationError as e:
@@ -121,6 +132,17 @@ def add_subtask(request):
     setattr(task, field_name, related_instance)
     try:
         task.save()
+
+        # Обрабатываем файлы из запроса
+        files = request.FILES.getlist('file')  # Получаем список файлов
+        for file in files:
+            document = DocumentTask()
+            document.task = task
+            document.title = file.name
+            document.file = file
+            document.save()
+
+
         m = {'message': 'Task added successfully', 'name': task.name}
         return JsonResponse(m)
     except ValidationError as e:
@@ -263,18 +285,18 @@ def update_task(request, id):
             deleted_files = json.loads(request.POST.get('deleted_files', '[]'))
             for file_id in deleted_files:
                 try:
-                    document = Document.objects.get(id=file_id)
+                    document = DocumentTask.objects.get(id=file_id)
                     # Удаление файла из файловой системы
                     if document.file and os.path.isfile(document.file.path):
                         os.remove(document.file.path)
                     document.delete()
-                except Document.DoesNotExist:
+                except DocumentTask.DoesNotExist:
                     continue
 
             # Добавление новых файлов, если они есть
             files = request.FILES.getlist('file')
             for file in files:
-                Document.objects.create(task=task, title=file.name, file=file)
+                DocumentTask.objects.create(task=task, title=file.name, file=file)
 
             # Сохранение обновленного комментария
             task.save()
@@ -299,3 +321,16 @@ def update_task(request, id):
             return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
+def gettask_docs(request, id):
+    try:
+        task = Task.objects.get(id=id)
+        files = DocumentTask.objects.filter(task=task)
+
+        files_data = [{'name': file.title, 'url': file.file.url, 'id': file.id} for file in files]
+
+        # print(files_data)
+        return JsonResponse(files_data, safe=False)
+    except Task.DoesNotExist:
+        return JsonResponse({'error': 'Comment not found'}, status=404)

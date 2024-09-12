@@ -57,48 +57,6 @@ function openPopupComment(e) {
             console.error(error);
         });
 
-//    window.ClassicEditor
-//       .create( document.querySelector( '#editor' ), config )
-//       .catch( error => {
-//           console.error( error );
-//       } );
-//    const nameTextarea = document.querySelector('textarea[name="name"]');
-//    const fullNameTextarea = document.querySelector('textarea[name="full_name"]');
-//
-//    nameTextarea.value = comment_view_name.innerText;
-//    fullNameTextarea.value = comment_view_fullname.innerText;
-//
-//    // Инициализация CKEditor после вставки текстов
-//    ClassicEditor
-//        .create(nameTextarea, {
-//                toolbar: ckeditorConfig.extends.toolbar,
-//                heading: ckeditorConfig.extends.heading,
-//                image: ckeditorConfig.extends.image,
-//                table: ckeditorConfig.extends.table
-//                })
-//        .then(editor => {
-//                // Store the editor instance for later use
-//                nameTextarea.editor = editor;
-//            })
-//        .catch(error => {
-//            console.error(error);
-//        });
-//
-//    ClassicEditor
-//        .create(fullNameTextarea, {
-//                toolbar: ckeditorConfig.extends.toolbar,
-//                heading: ckeditorConfig.extends.heading,
-//                image: ckeditorConfig.extends.image,
-//                table: ckeditorConfig.extends.table
-//                })
-//        .then(editor => {
-//                // Store the editor instance for later use
-//                fullNameTextarea.editor = editor;
-//        })
-//        .catch(error => {
-//            console.error(error);
-//        });
-
 
     let deletedFiles = []; // Массив для хранения ID удаленных файлов
 
@@ -157,31 +115,6 @@ function openPopupComment(e) {
         // Обновляем значение textarea с текстом
         fullNameTextarea.value = fullNameHtml;
 
-    // Получаем HTML-контент из CKEditor
-//        const nameHtml = nameTextarea.editor.getData();
-//        const fullNameHtml = fullNameTextarea.editor.getData();
-//
-//        // Функция для преобразования HTML в текст без тегов
-//        function htmlToText(html) {
-//            const temporaryElement = document.createElement('div');
-//            temporaryElement.innerHTML = html;
-//            console.log(html)
-//            return temporaryElement.textContent || temporaryElement.innerText || '';
-//        }
-//
-//        // Преобразуем HTML-контент в текст
-//        const nameText = htmlToText(nameHtml);
-//        const fullNameText = htmlToText(fullNameHtml);
-//
-//        // Обновляем значения textarea с текстом
-//        nameTextarea.value = nameText;
-//        fullNameTextarea.value = fullNameText;
-        // Update the textarea with CKEditor content before form submission
-//        nameTextarea.editor.updateSourceElement();
-//        fullNameTextarea.editor.updateSourceElement();
-        // Update the textarea with CKEditor content before form submission
-//        ClassicEditor.instances[nameTextarea].updateSourceElement();
-//        ClassicEditor.instances[fullNameTextarea].updateSourceElement();
 
 
         const formData = new FormData(formElement);

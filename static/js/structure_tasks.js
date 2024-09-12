@@ -44,26 +44,7 @@ function openPopupTask(e) {
     });
 };
 
-//    const task_view_fullname = e.currentTarget.nextSibling.nextSibling;
-//    const taskBlock = task_view_name.closest('.task-view-block');
-//
-//    const taskDateBeginElement = taskBlock.querySelector('.task-view-date-begin');
-//    const taskDateBegin = taskDateBeginElement.textContent.replace('Дата начала: ', '').trim();
-//
-//    const taskTermElement = taskBlock.querySelector('.task-view-term');
-//    const taskTerm = taskTermElement.textContent.replace('Срок: ', '').trim();
-//
-////    const taskImportanceElement = taskBlock.querySelector('.task-view-importance');
-////    const taskImportance = taskImportanceElement.textContent;
-//
-//    const taskResponsibleElement = taskBlock.querySelector('.task-view-user-responsible');
-//    const taskResponsible = taskResponsibleElement.textContent.replace('Ответственный: ', '').trim();
-//
-//    const taskStatusElement = taskBlock.querySelector('.task-view-status');
-//    const taskStatus = taskStatusElement.textContent.replace('Статус: ', '').trim();
 
-//    const taskDateDevElement = taskBlock.querySelector('.task-view-date-begin');
-//    const taskDateDev = taskDateBeginElement.textContent.replace('Дата начала: ', '').trim();
 function UpdateTask(taskName, taskDescr, taskBegin, taskTerm, taskImportance, taskDateDev, taskDateFund, taskCost, taskStatus, taskRespon, taskId, userId) {
     const body = document.querySelector('body');
     const popup = document.createElement('div');
@@ -94,6 +75,9 @@ function UpdateTask(taskName, taskDescr, taskBegin, taskTerm, taskImportance, ta
                       "      <select id=\"select_status\" name=\"status\"><option>" + taskStatus + "</option><option>В работе</option><option>Отложена</option><option>Завершена</option></select>" +
                       "      <label for=\"select_user\">Ответственный: </label>" +
                       "      <select id=\"select_user\" name=\"select_user\"><option value=\"" + userId + "\"" + ">" + taskRespon + "</option></select>" +
+                      "      <label for=\"file-upload\" class=\"file-upload-label\">Загрузить файл</label>" +
+                      "      <input type=\"file\" id=\"file-upload\" name=\"file\" class=\"file-upload-input\" multiple/>" +
+                      "      <div id=\"file-list\"></div>" +
                       "      <button type=\"submit\">Отправить</button>" +
                       "    </form>" +
                       "</div>";
@@ -136,6 +120,53 @@ function UpdateTask(taskName, taskDescr, taskBegin, taskTerm, taskImportance, ta
         });
 
 
+    let deletedFiles = []; // Массив для хранения ID удаленных файлов
+
+    // Запрос на получение списка документов
+    $.ajax({
+        url: `/gettask_docs/${taskId}/`,
+        method: 'GET',
+        dataType: 'json',
+        success: function(files) {
+            const selectDoc = document.getElementById('file-list');
+            selectDoc.innerHTML = ''; // Очищаем существующий контент перед добавлением новых данных
+
+            // Проверяем, что files - это массив
+            if (Array.isArray(files)) {
+                files.forEach((file, index) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.classList.add('file-item');
+
+                    const fileLink = document.createElement('a');
+                    fileLink.href = file.url;
+                    fileLink.target = '_blank';
+                    fileLink.textContent = file.name;
+
+                    const removeBtn = document.createElement('span');
+                    removeBtn.innerHTML = ' &#10006;';
+                    removeBtn.style.cursor = 'pointer';
+                    removeBtn.style.color = '#ffffff';
+                    removeBtn.style.marginLeft = '10px';
+
+                    removeBtn.onclick = () => {
+                        fileItem.remove(); // Удаляем элемент из DOM
+                        deletedFiles.push(file.id); // Добавляем ID файла в массив удаленных
+                    };
+
+                    fileItem.appendChild(fileLink);
+                    fileItem.appendChild(removeBtn);
+                    selectDoc.appendChild(fileItem);
+                });
+            } else {
+                console.error('Ошибка: files не является массивом или пуст.', files);
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error('Ошибка получения списка документов:', textStatus, errorThrown);
+        }
+    });
+
+
     const btnClose = popup.querySelector('.signin-header>span');
     btnClose.onclick = () => {
         const addtaskpopup = document.getElementById('add_task');
@@ -157,7 +188,7 @@ function UpdateTask(taskName, taskDescr, taskBegin, taskTerm, taskImportance, ta
         const formData = new FormData(formElement);
 
         // Добавляем массив с ID удаленных файлов в данные формы
-//        formData.append('deleted_files', JSON.stringify(deletedFiles));
+        formData.append('deleted_files', JSON.stringify(deletedFiles));
 
         // Отправляем данные на сервер
         $.ajax({
@@ -183,7 +214,6 @@ function UpdateTask(taskName, taskDescr, taskBegin, taskTerm, taskImportance, ta
                         const term = taskElement.querySelector('.task-view-term');
                         const select_user = taskElement.querySelector('.task-view-user-responsible');
 
-//
                         status.innerHTML = response.status;
                         importance.innerHTML = response.importance;
                         date_beg.innerHTML = response.date;
@@ -202,6 +232,7 @@ function UpdateTask(taskName, taskDescr, taskBegin, taskTerm, taskImportance, ta
                         document.querySelector(`[data-taskid="${taskId}"]`).childNodes[1].childNodes[0].childNodes[3].innerHTML = response.select_user;
                         console.log('Задача успешно обновлена');
                     };
+
                     const addtaskpopup = document.getElementById('add_task');
                     addtaskpopup.parentElement.removeChild(addtaskpopup);
                 },
@@ -211,6 +242,51 @@ function UpdateTask(taskName, taskDescr, taskBegin, taskTerm, taskImportance, ta
                 }
         });
    });
+
+   const fileInput = document.getElementById('file-upload');
+   const fileList = document.getElementById('file-list');
+
+   let selectedFiles = []; // Массив для хранения всех выбранных файлов
+
+   fileInput.addEventListener('change', (e) => {
+        const newFiles = Array.from(fileInput.files); // Массив новых файлов
+        selectedFiles = selectedFiles.concat(newFiles); // Добавляем новые файлы к уже существующим
+        updateFileList(); // Обновляем отображение списка файлов
+    });
+
+   function updateFileList() {
+        fileList.innerHTML = ''; // Очищаем предыдущий список файлов
+        selectedFiles.forEach((file, index) => {
+            const fileLink = document.createElement('a');
+            fileLink.href = URL.createObjectURL(file);
+            fileLink.target = '_blank';
+            fileLink.textContent = file.name;
+
+            // Добавляем возможность удаления файла
+            const removeBtn = document.createElement('span');
+            removeBtn.innerHTML = ' &#10006;';
+            removeBtn.style.cursor = 'pointer';
+            removeBtn.style.color = 'red';
+            removeBtn.style.marginLeft = '10px';
+
+            removeBtn.onclick = () => {
+                selectedFiles.splice(index, 1); // Удаляем файл из массива
+                updateFileList(); // Обновляем список файлов
+            };
+
+            fileList.appendChild(fileLink);
+            fileList.appendChild(removeBtn);
+            fileList.appendChild(document.createElement('br'));
+        });
+    }
+
+    // Обработка закрытия попапа
+//   const btnClose = popup.querySelector('.signin-header>span');
+   btnClose.onclick = () => {
+        const addtaskpopup = document.getElementById('add_task');
+        addtaskpopup.parentElement.removeChild(addtaskpopup);
+    };
+
 };
 
 
@@ -276,7 +352,7 @@ function clickBtnTask(e) {
                       "  <div class=\"signin-header\"><span>&#10006</span></div>" +
                       "    <form class=\"task-form\" id=\"task-form\" action=\"#\">" +
                       "      <textarea class=\"task-name\" name=\"name\" placeholder=\"Краткое описание\" required></textarea>" +
-                      "      <textarea name=\"descr_task\" placeholder=\"Задача\" required></textarea>" +
+                      "      <textarea name=\"descr_task\" placeholder=\"Задача\" id=\"editor\" class=\"django_ckeditor_5\"></textarea>" +
                       "      <label for=\"date\">Дата начала: </label>" +
                       "      <input type=\"date\" id=\"date\" name=\"date\"/>" +
                       "      <textarea style=\"min-height: 7px;\" name=\"term\" placeholder=\"Введите срок задачи в днях\" required></textarea>" +
@@ -291,10 +367,64 @@ function clickBtnTask(e) {
                       "      <select id=\"select_status\" name=\"status\"><option>В работе</option><option>Отложена</option><option>Завершена</option></select>" +
                       "      <label for=\"select_user\">Ответственный: </label>" +
                       "      <select id=\"select_user\" name=\"select_user\"></select>" +
+                      "      <label for=\"file-upload\" class=\"file-upload-label\">Загрузить файл</label>" +
+                      "      <input type=\"file\" id=\"file-upload\" name=\"file\" class=\"file-upload-input\" multiple/>" +
+                      "      <div id=\"file-list\"></div>" +
                       "      <button type=\"submit\">Отправить</button>" +
                       "    </form>" +
                       "</div>";
     body.prepend(popup);
+
+ // Инициализация CKEditor на textarea
+    ClassicEditor
+        .create(document.querySelector('#editor'), {
+            toolbar: ckeditorConfig.extends.toolbar,
+            heading: ckeditorConfig.extends.heading,
+            image: ckeditorConfig.extends.image,
+            table: ckeditorConfig.extends.table
+        })
+        .then(editor => {
+            // Store the editor instance for later use
+            document.querySelector('#editor').editor = editor;
+        })
+        .catch(error => {
+            console.error(error);
+        });
+    const fileInput = document.getElementById('file-upload');
+    const fileList = document.getElementById('file-list');
+
+    let selectedFiles = []; // Массив для хранения всех выбранных файлов
+
+    fileInput.addEventListener('change', (e) => {
+        const newFiles = Array.from(fileInput.files); // Массив новых файлов
+        selectedFiles = selectedFiles.concat(newFiles); // Добавляем новые файлы к уже существующим
+        updateFileList(); // Обновляем отображение списка файлов
+    });
+
+    function updateFileList() {
+        fileList.innerHTML = ''; // Очищаем предыдущий список файлов
+        selectedFiles.forEach((file, index) => {
+            const fileLink = document.createElement('a');
+            fileLink.href = URL.createObjectURL(file);
+            fileLink.target = '_blank';
+            fileLink.textContent = file.name;
+
+            // Добавляем возможность удаления файла
+            const removeBtn = document.createElement('span');
+            removeBtn.innerHTML = ' &#10006;';
+            removeBtn.style.cursor = 'pointer';
+            removeBtn.style.color = '#ffffff';
+            removeBtn.onclick = () => {
+                selectedFiles.splice(index, 1); // Удаляем файл из массива
+                updateFileList(); // Обновляем список файлов
+            };
+
+            fileList.appendChild(fileLink);
+            fileList.appendChild(removeBtn);
+            fileList.appendChild(document.createElement('br'));
+        });
+    }
+
 
 
     // Запрос на получение списка пользователей
@@ -323,7 +453,15 @@ function clickBtnTask(e) {
         const formData = new FormData(formElement); // создаём объект FormData, передаём в него элемент формы
         // теперь можно извлечь данные
         const name = formData.get('name');
-        const descr_task = formData.get('descr_task');
+//        const descr_task = formData.get('descr_task');
+
+        const fullNameTextarea = document.querySelector('textarea[name="descr_task"]');
+        const descr_task = fullNameTextarea.editor.getData();
+        console.log(descr_task)
+
+        // Обновляем значение textarea с текстом
+        fullNameTextarea.value = descr_task
+
         const date_begin = formData.get('date');
         const term = formData.get('term');
         const importance = formData.get('importance');
@@ -357,21 +495,40 @@ function clickBtnTask(e) {
         const cost = formData.get('cost');
         if (cost) data['cost'] = cost;
 
+        formData.append('id', data_id);
+        formData.append('type', data_type);
+        formData.append('name', name);
+        formData.append('descr_task', descr_task);
+        formData.append('date_begin', date_begin);
+        formData.append('term', term);
+        formData.append('importance', importance);
+        formData.append('date_develop', date_develop);
+        formData.append('date_funding', date_funding);
+        formData.append('status', status);
+        formData.append('select_user', select_user);
+        formData.append('level', level);
+        formData.append('structures', JSON.stringify(listParents));
+
+
         $.ajax({
             url: '/addtask/',
             method: 'POST',
-            dataType: 'json',
-                data: data,
-                success: function(data) {
-                    const addtaskpopup = document.getElementById('add_task');
-                    addtaskpopup.parentElement.removeChild(addtaskpopup);
+            data: formData, // Отправляем объект FormData, содержащий файлы
+                processData: false, // Не обрабатываем данные, т.к. это FormData
+                contentType: false, // Устанавливаем contentType в false, чтобы браузер автоматически установил boundary
+                headers: {
+                    'X-CSRFToken': csrfmiddlewaretoken // Передаем CSRF-токен в заголовках
                 },
-                error: function(jqXHR, textStatus, errorThrown) {
+            success: function(data) {
+                const addtaskpopup = document.getElementById('add_task');
+                addtaskpopup.parentElement.removeChild(addtaskpopup);
+                },
+            error: function(jqXHR, textStatus, errorThrown) {
                 // Выводим подробности ошибки в консоль для отладки
                 console.error('Ошибка записи задачи:', textStatus, errorThrown);
                 console.error('Ответ сервера:', jqXHR.responseText);
                 alert('Ошибка записи задачи! Заполните все поля');
-            },
+                },
         });
     });
 
@@ -394,6 +551,33 @@ function clickBtnSubTask(e) {
     const currentLevel = parseInt(btnTask.parentElement.parentElement.getAttribute('data-level'));
     const nextLevel = currentLevel+1;
 
+    const structData = btnTask.parentElement;
+    let listParents = [];
+    if (data_type != "company") {
+        let struct_external = structData.parentElement.parentElement;
+        let parentType = data_type;
+        let parentId = data_id;
+        while (parentType != "company") {
+            let structInner = struct_external.parentElement;
+            if (structInner.classList.contains('struct-inner')) {
+                if (parentType != structInner.childNodes[1].getAttribute('data-type')) {
+                    parentType = structInner.childNodes[1].getAttribute('data-type');
+                    parentId = structInner.childNodes[1].getAttribute('data-id');
+                    listParents.push({
+                        'id': parentId,
+                        'type': parentType
+                    });
+                } else {
+                    parentType = structInner.childNodes[1].getAttribute('data-type');
+                }
+            } else { parentType = "company"; };
+            struct_external = structInner.parentElement;
+        }
+    }
+
+
+
+
     const body = document.querySelector('body');
     const popup = document.createElement('div');
     popup.classList.add("popup-background");
@@ -403,7 +587,7 @@ function clickBtnSubTask(e) {
                       "  <div class=\"signin-header\"><span>&#10006</span></div>" +
                       "    <form class=\"task-form\" id=\"task-form\" action=\"#\">" +
                       "      <textarea class=\"task-name\" name=\"name\" placeholder=\"Краткое описание\" required></textarea>" +
-                      "      <textarea name=\"descr_task\" placeholder=\"Задача\" required></textarea>" +
+                      "      <textarea name=\"descr_task\" placeholder=\"Задача\" id=\"editor\" class=\"django_ckeditor_5\"></textarea>" +
                       "      <label for=\"date\">Дата начала: </label>" +
                       "      <input type=\"date\" id=\"date\" name=\"date\"/>" +
                       "      <textarea style=\"min-height: 7px;\" name=\"term\" placeholder=\"Введите срок задачи в днях\" required></textarea>" +
@@ -418,10 +602,64 @@ function clickBtnSubTask(e) {
                       "      <select id=\"select_status\" name=\"status\"><option>В работе</option><option>Отложена</option><option>Завершена</option></select>" +
                       "      <label for=\"select_user\">Ответственный: </label>" +
                       "      <select id=\"select_user\" name=\"select_user\"></select>" +
+                      "      <label for=\"file-upload\" class=\"file-upload-label\">Загрузить файл</label>" +
+                      "      <input type=\"file\" id=\"file-upload\" name=\"file\" class=\"file-upload-input\" multiple/>" +
+                      "      <div id=\"file-list\"></div>" +
                       "      <button type=\"submit\">Отправить</button>" +
                       "    </form>" +
                       "</div>";
     body.prepend(popup);
+
+     // Инициализация CKEditor на textarea
+    ClassicEditor
+        .create(document.querySelector('#editor'), {
+            toolbar: ckeditorConfig.extends.toolbar,
+            heading: ckeditorConfig.extends.heading,
+            image: ckeditorConfig.extends.image,
+            table: ckeditorConfig.extends.table
+        })
+        .then(editor => {
+            // Store the editor instance for later use
+            document.querySelector('#editor').editor = editor;
+        })
+        .catch(error => {
+            console.error(error);
+        });
+    const fileInput = document.getElementById('file-upload');
+    const fileList = document.getElementById('file-list');
+
+    let selectedFiles = []; // Массив для хранения всех выбранных файлов
+
+    fileInput.addEventListener('change', (e) => {
+        const newFiles = Array.from(fileInput.files); // Массив новых файлов
+        selectedFiles = selectedFiles.concat(newFiles); // Добавляем новые файлы к уже существующим
+        updateFileList(); // Обновляем отображение списка файлов
+    });
+
+    function updateFileList() {
+        fileList.innerHTML = ''; // Очищаем предыдущий список файлов
+        selectedFiles.forEach((file, index) => {
+            const fileLink = document.createElement('a');
+            fileLink.href = URL.createObjectURL(file);
+            fileLink.target = '_blank';
+            fileLink.textContent = file.name;
+
+            // Добавляем возможность удаления файла
+            const removeBtn = document.createElement('span');
+            removeBtn.innerHTML = ' &#10006;';
+            removeBtn.style.cursor = 'pointer';
+            removeBtn.style.color = '#ffffff';
+            removeBtn.onclick = () => {
+                selectedFiles.splice(index, 1); // Удаляем файл из массива
+                updateFileList(); // Обновляем список файлов
+            };
+
+            fileList.appendChild(fileLink);
+            fileList.appendChild(removeBtn);
+            fileList.appendChild(document.createElement('br'));
+        });
+    }
+
 
 
     // Запрос на получение списка пользователей
@@ -485,16 +723,36 @@ function clickBtnSubTask(e) {
         const cost = formData.get('cost');
         if (cost) data['cost'] = cost;
 
+
+        formData.append('id', data_id);
+        formData.append('task_id', data_taskid);
+        formData.append('type', data_type);
+        formData.append('name', name);
+        formData.append('descr_task', descr_task);
+        formData.append('date_begin', date_begin);
+        formData.append('term', term);
+        formData.append('importance', importance);
+        formData.append('date_develop', date_develop);
+        formData.append('date_funding', date_funding);
+        formData.append('status', status);
+        formData.append('select_user', select_user);
+        formData.append('level', nextLevel);
+        formData.append('structures', JSON.stringify(listParents));
+
         $.ajax({
             url: '/addsubtask/',
             method: 'POST',
-            dataType: 'json',
-                data: data,
-                success: function(data) {
-                    const addtaskpopup = document.getElementById('add_task');
-                    addtaskpopup.parentElement.removeChild(addtaskpopup);
+            data: formData, // Отправляем объект FormData, содержащий файлы
+                processData: false, // Не обрабатываем данные, т.к. это FormData
+                contentType: false, // Устанавливаем contentType в false, чтобы браузер автоматически установил boundary
+                headers: {
+                    'X-CSRFToken': csrfmiddlewaretoken // Передаем CSRF-токен в заголовках
                 },
-                error: function(jqXHR, textStatus, errorThrown) {
+            success: function(data) {
+                const addtaskpopup = document.getElementById('add_task');
+                addtaskpopup.parentElement.removeChild(addtaskpopup);
+                },
+            error: function(jqXHR, textStatus, errorThrown) {
                 // Выводим подробности ошибки в консоль для отладки
                 console.error('Ошибка записи задачи:', textStatus, errorThrown);
                 console.error('Ответ сервера:', jqXHR.responseText);
