@@ -62,6 +62,7 @@ def add_task(request):
     task.cost = request.POST.get('cost', None)
     task.status = request.POST.get('status', None)
     task.level = request.POST.get('level', None)
+    task.date_end()
 
     user_id = request.POST.get('select_user')
     # # Fetch the User instance
@@ -72,6 +73,9 @@ def add_task(request):
     setattr(task, field_name, related_instance)
     try:
         task.save()
+
+        date_end = task.date_end()
+        print(date_end)
 
         # Обрабатываем файлы из запроса
         files = request.FILES.getlist('file')  # Получаем список файлов
@@ -112,7 +116,6 @@ def add_subtask(request):
     task.field = l_tsk.field or None
     task.facility = l_tsk.facility or None
 
-
     task.descr_task = request.POST.get('descr_task', None)
     task.date_begin = request.POST.get('date_begin', None)
     task.term = request.POST.get('term', None)
@@ -122,6 +125,7 @@ def add_subtask(request):
     task.cost = request.POST.get('cost', None)
     task.status = request.POST.get('status', None)
     task.level = request.POST.get('level', None)
+    task.date_end()
 
     user_id = request.POST.get('select_user')
 
@@ -141,7 +145,6 @@ def add_subtask(request):
             document.title = file.name
             document.file = file
             document.save()
-
 
         m = {'message': 'Task added successfully', 'name': task.name}
         return JsonResponse(m)
@@ -194,6 +197,7 @@ def get_task(request, id):
     users = User.objects.all()
     return JsonResponse(tsk, safe=False)
 
+
 def get_subtasks(request):
     kwargs = {request.POST['type']: request.POST['id']}
     level = int(request.POST.get('level', 2))
@@ -225,32 +229,6 @@ def get_users(request):
         return JsonResponse(user_list, safe=False)
 
 
-def filter_tasks(request):
-    user_id = request.GET.get('responsible_user_id')
-    if user_id:
-        tasks = Task.objects.filter(user_responsible_id=user_id)
-    else:
-        tasks = Task.objects.all()
-
-    data = []
-    for task in tasks:
-        task_data = {
-            'id': task.id,
-            'name': task.name,
-            'descr_task': task.descr_task,
-            'user_created': f'{task.user_created}',
-            'user_responsible': f'{task.user_responsible}',
-            'status': task.status,
-            'importance': task.importance.split()[0],
-            'date_begin': task.date_begin,
-            'term': f'{task.term} дн.',
-            'level': task.level,
-        }
-        data.append(task_data)
-
-    return JsonResponse(data, safe=False)
-
-
 def update_task(request, id):
     if request.method == 'POST':
         try:
@@ -267,6 +245,7 @@ def update_task(request, id):
             task.date_funding = request.POST.get('date_fund', task.date_funding)
             task.cost = request.POST.get('cost', task.cost)
             task.status = request.POST.get('status', task.status)
+            task.date_end()
             # task.user_responsible = request.POST.get('select_user', task.user_responsible)
 
             # Получение ID пользователя из POST и назначение ответственного
@@ -278,8 +257,6 @@ def update_task(request, id):
                     task.user_responsible = user_responsible
                 except User.DoesNotExist:
                     return JsonResponse({'error': 'User not found'}, status=404)
-
-
 
             # Удаление файлов, если они есть в запросе
             deleted_files = json.loads(request.POST.get('deleted_files', '[]'))
@@ -300,6 +277,12 @@ def update_task(request, id):
 
             # Сохранение обновленного комментария
             task.save()
+            print(task.date_finish)
+
+            if task.status == 'Отложена' and task.level == 1:
+                tasks = Task.objects.filter(last_task=task.id)
+                print(tasks)
+
 
             return JsonResponse({'name': task.name,
                                  'descr_task': task.descr_task,
@@ -334,3 +317,72 @@ def gettask_docs(request, id):
         return JsonResponse(files_data, safe=False)
     except Task.DoesNotExist:
         return JsonResponse({'error': 'Comment not found'}, status=404)
+
+
+def get_filter_tasks(request):
+    kwargs = {request.POST['type']: request.POST['id']}
+    tasks = Task.objects.filter(**kwargs)
+    user_id = request.POST.get('responsible_user')
+    status = request.POST.get('status')
+
+    data = []
+    if user_id != '0':
+        tasks = tasks.filter(user_responsible_id=user_id)
+        # tasks = tasks.filter(status=status)
+        # print(status, type(status))
+    if status != 'Все':  # Если выбран конкретный статус, фильтруем по нему
+        tasks = tasks.filter(status=status)
+    if user_id == '0' and status == 'Все':
+        tasks_all = tasks
+        for task in tasks_all:
+            if task.level == 1:
+                task_data = {
+                    'id': task.id,
+                    'name': task.name,
+                    'descr_task': task.descr_task,
+                    'user_created': f'{task.user_created}',
+                    'user_responsible': f'{task.user_responsible}',
+                    'status': task.status,
+                    'importance': task.importance.split()[0],
+                    'date_begin': task.date_begin,
+                    'term': f'{task.term} дн.',
+                    'level': task.level,
+                }
+                data.append(task_data)
+        return JsonResponse(data, safe=False)
+
+    for task in tasks:
+        if task.level == 1:
+            task_data = {
+                'id': task.id,
+                'name': task.name,
+                'descr_task': task.descr_task,
+                'user_created': f'{task.user_created}',
+                'user_responsible': f'{task.user_responsible}',
+                'status': task.status,
+                'importance': task.importance.split()[0],
+                'date_begin': task.date_begin,
+                'term': f'{task.term} дн.',
+                'level': task.level,
+            }
+            data.append(task_data)
+        elif task.level != 1:
+            for i in range(task.level - 1):
+                last_task = task.last_task
+                task = last_task
+            task_data = {
+                'id': task.id,
+                'name': task.name,
+                'descr_task': task.descr_task,
+                'user_created': f'{task.user_created}',
+                'user_responsible': f'{task.user_responsible}',
+                'status': task.status,
+                'importance': task.importance.split()[0],
+                'date_begin': task.date_begin,
+                'term': f'{task.term} дн.',
+                'level': task.level,
+            }
+            if task_data not in data:
+                data.append(task_data)
+
+    return JsonResponse(data, safe=False)

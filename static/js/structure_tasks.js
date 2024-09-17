@@ -1,8 +1,11 @@
+createFilters()
+
 function btnsClickTask() {
     const btns1 = leftaside.querySelectorAll('.struct-btn-1');
     const btns2 = leftaside.querySelectorAll('.struct-btn-2');
     const btnsTask = leftaside.querySelectorAll('.struct-task');
     const tasksName = leftaside.querySelectorAll('.struct-task-name');
+
 
 
     if (btns1 && btns2 && btnsTask && (tasksName.length > 0)) {
@@ -848,6 +851,7 @@ function viewTasks(tasks, type, id, name) {
     const subTasks = tasks_data.querySelectorAll('.add-subtask');
     const tasksOpen = tasks_data.querySelectorAll('.task-btn-open');
 
+
     for (let subTask of subTasks) { subTask.onclick = clickBtnSubTask; };
     for (let taskOpen of tasksOpen) { taskOpen.onclick = clickSubTasks; };
 
@@ -1192,7 +1196,84 @@ function loadTasks() {
             },
         });
     };
-  };
+};
+
+
+
+function createFilters() {
+   const responsible_filter = document.getElementById('responsible-filter')
+   const status_filter = document.getElementById('status-filter')
+
+    // Запрос на получение списка пользователей
+    $.ajax({
+        url: '/get_users/',
+        method: 'GET',
+        dataType: 'json',
+        success: function(users) {
+            users.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user.id;
+                option.text = user.name + ' ' + user.surname;
+                responsible_filter.appendChild(option);
+            });
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            console.error('Ошибка получения списка пользователей:', textStatus, errorThrown);
+        }
+    });
+    const option = document.createElement('option');
+    option.value = 0;
+    option.text = 'Все';
+    responsible_filter.appendChild(option);
+    console.log(responsible_filter)
+};
+
+function applyFilter() {
+    const selectedUser = document.getElementById('responsible-filter').value;
+    const status = document.getElementById('status-filter').value;
+    console.log(selectedUser)
+    console.log(status)
+    tasks = document.querySelectorAll('.task-view-block')
+//    let tasks_id = [];
+//    for (let task of tasks) { tasks_id.push(task.getAttribute('data-taskid')); };
+//    console.log(tasks_id);
+
+    const headerName = document.getElementById('tasks-header-name');
+    const data_type = headerName.getAttribute('data-type');
+    const data_id = headerName.getAttribute('data-id');
+    const name = document.getElementById('tasks-header-name-txt').innerHTML;
+    if (data_type && data_id) {
+        $.ajax({
+            url: '/getfiltertasks/',
+            method: 'POST',
+            dataType: 'json',
+            data: {
+                'id': data_id,
+                'type': data_type,
+//                'tasks_id': tasks_id,
+                'responsible_user': selectedUser,
+                'status': status,
+                'csrfmiddlewaretoken': csrfmiddlewaretoken,
+                },
+            success: function(data) {
+                viewTasks(data, data_type, data_id, name);
+            },
+            error: function(xhr, status, error) {
+                console.error('Ошибка загрузки задач:', error);
+            },
+        });
+    };
+};
+
+
+
+
+//   responsible_filter.addEventListener('change', (e) => {
+//        const newFiles = Array.from(fileInput.files); // Массив новых файлов
+//        selectedFiles = selectedFiles.concat(newFiles); // Добавляем новые файлы к уже существующим
+//        updateFileList(); // Обновляем отображение списка файлов
+//    });
+
 
 
 

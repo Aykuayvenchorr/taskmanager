@@ -409,16 +409,23 @@ nav div a:hover, nav div span:hover { color: var(--color-text-DarkGreen); }
 #tasks-filter {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
+    font-family: 'Raleway', sans-serif;
+    color: var(--color-text-white);
+    font-size: 14px;
+    margin-top: 10px;
 }
 
 /* Стиль для текстового лейбла фильтра */
 #tasks-filter label {
     margin-right: 10px;
     font-weight: bold;
+    margin-left: 10px;
 }
 
 /* Стиль для выпадающего списка */
-#responsible-filter {
+#responsible-filter,
+#status-filter {
     padding: 5px;
     font-size: 14px;
     border-radius: 5px;

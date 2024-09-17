@@ -22,6 +22,7 @@ class Task(models.Model):
     name = models.TextField(blank=False, null=False)
     descr_task = models.TextField(blank=False, null=False)
     date_begin = models.DateField()
+    date_finish = models.DateField(blank=True, null=True)
     term = models.IntegerField(default=0)  # Продолжительность в днях !!!
     source = models.TextField(blank=True, null=True)
     descr_source = models.TextField(blank=True, null=True)
@@ -56,31 +57,31 @@ class Task(models.Model):
         return f'{self.name}'
 
     def date_end(self):
-        return self.date_begin + datetime.timedelta(days=self.term)
+        if self.date_begin:
+            try:
+                # Преобразуем self.term в число с плавающей запятой
+                term_days = int(self.term)
+                # print("Срок (в днях):", term_days, type(term_days))
+
+                db = str(self.date_begin)
+
+                start_date = datetime.datetime.strptime(db, "%Y-%m-%d")
+
+                # print("Дата начала:", start_date, type(start_date))
+
+                # Рассчитываем конечную дату
+                date_end = start_date + datetime.timedelta(days=term_days)
+                self.date_finish = date_end
+                # print("Конечная дата:", date_end)
+                return self.date_finish
+
+            except (ValueError, TypeError) as e:
+                print("Ошибка:", e)
+                return None
+        return None
 
     def date_begin_from_last_task(self):
         pass
-
-    # def save(self, *args, **kwargs):
-    #     # Проверяем и устанавливаем company на основе связанных объектов, если это необходимо
-    #     if not self.company:
-    #         if self.division and self.division.company:
-    #             self.company = self.division.company
-    #         elif self.project and self.project.division and self.project.division.company:
-    #             self.company = self.project.division.company
-    #             self.division = self.project.division
-    #         elif self.license:
-    #             self.company = self.license.owner
-    #         elif self.field and self.field.license:
-    #             self.company = self.field.license.owner
-    #             self.license = self.field.license
-    #         elif self.facility and self.facility.field:
-    #             self.company = self.facility.field.license.owner
-    #             self.license = self.facility.field.license
-    #             self.field = self.facility.field
-    #
-    #     # Вызов родительского метода save для сохранения изменений
-    #     super(Task, self).save(*args, **kwargs)
 
 
 class TaskDependencies(models.Model):
@@ -101,6 +102,7 @@ class TaskDependencies(models.Model):
 
     def __str__(self):
         return f'{self.dependent.name} от {self.defining.name}'
+
 
 class DocumentTask(models.Model):
     task = models.ForeignKey(Task, on_delete=SET_NULL, blank=True, null=True)

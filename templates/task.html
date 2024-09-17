@@ -33,12 +33,18 @@
 <!--        <label for="tasks-all">Показать неактуальные</label>-->
 <!--        <input id="tasks-all" type="checkbox">-->
 <!--    </div>-->
-     <div id="tasks-filter">
-        <label for="responsible-filter">Фильтр по ответственному:</label>
-        <select id="responsible-filter" onchange="applyFilter()">
-            <!-- Здесь добавляются опции -->
+
+</div>
+<div id="tasks-filter">
+        <label for="responsible-filter">Ответственный:</label>
+        <select id="responsible-filter" onchange="applyFilter()"></select>
+        <label for="status-filter">Статус:</label>
+        <select id="status-filter" onchange="applyFilter()">
+             <option value="Все">Все</option>
+             <option value="В работе">В работе</option>
+             <option value="Отложена">Отложена</option>
+             <option value="Завершена">Завершена</option>
         </select>
-    </div>
 </div>
 <div id="tasks-data"></div>
 {% endblock data %}
