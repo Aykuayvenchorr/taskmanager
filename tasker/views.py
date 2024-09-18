@@ -1,3 +1,4 @@
+import datetime
 import json
 import os
 
@@ -275,9 +276,20 @@ def update_task(request, id):
             for file in files:
                 DocumentTask.objects.create(task=task, title=file.name, file=file)
 
+            if task.status == 'Завершена':
+                date_fact_end = datetime.datetime.now()  # Получаем текущую дату и время
+                formatted_date = date_fact_end.strftime('%Y-%m-%d %H:%M:%S')  # Форматируем дату
+
+                # Добавляем строку с датой к полю descr_task
+                task.descr_task += f'<br><br><strong>{formatted_date}</strong> пользователь <strong>{task.user_responsible}</strong> завершил задачу'
+                # print(f'Завершенная задача: {task.descr_task}')
+                if task.level == 1:
+                    if not check_subtasks_completed(task):
+                        return JsonResponse({'error': 'У задачи есть незавершенные подзадачи'}, status=200)
+
             # Сохранение обновленного комментария
             task.save()
-            print(task.date_finish)
+            # print(task.date_finish)
 
             if task.status == 'Отложена' and task.level == 1:
                 tasks = Task.objects.filter(last_task=task.id)
@@ -304,6 +316,23 @@ def update_task(request, id):
             return JsonResponse({'error': f'An error occurred: {str(e)}'}, status=500)
 
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
+def check_subtasks_completed(task):
+    """Рекурсивная функция для проверки статуса всех подзадач"""
+    subtasks = Task.objects.filter(last_task=task.id)
+
+    for subtask in subtasks:
+        # Если подзадача не завершена, возвращаем False
+        if subtask.status != 'Завершена':
+            return False
+
+        # Если у подзадачи есть свои подзадачи, проверяем их рекурсивно
+        if not check_subtasks_completed(subtask):
+            return False
+
+    # Если все подзадачи завершены, возвращаем True
+    return True
 
 
 def gettask_docs(request, id):

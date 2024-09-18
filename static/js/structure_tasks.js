@@ -204,6 +204,11 @@ function UpdateTask(taskName, taskDescr, taskBegin, taskTerm, taskImportance, ta
                     'X-CSRFToken': csrfmiddlewaretoken
                 },
                 success: function(response) {
+                    if (response.error) {
+                        alert(response.error);
+                        // Прерываем выполнение кода, чтобы не обновлять интерфейс
+                        return;
+                    }
                     if (response.level > 1) {
                         console.log('for subtask')
                         const taskElement = document.querySelector(`[data-taskid="${taskId}"]`);
