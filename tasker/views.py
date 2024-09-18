@@ -283,9 +283,8 @@ def update_task(request, id):
                 # Добавляем строку с датой к полю descr_task
                 task.descr_task += f'<br><br><strong>{formatted_date}</strong> пользователь <strong>{task.user_responsible}</strong> завершил задачу'
                 # print(f'Завершенная задача: {task.descr_task}')
-                if task.level == 1:
-                    if not check_subtasks_completed(task):
-                        return JsonResponse({'error': 'У задачи есть незавершенные подзадачи'}, status=200)
+                if not check_subtasks_completed(task):
+                     return JsonResponse({'error': 'У задачи есть незавершенные подзадачи'}, status=200)
 
             # Сохранение обновленного комментария
             task.save()
